@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Accountant\DashboardController as AccountantDashboardController;
+use App\Http\Controllers\Admin\GradeController;
+use App\Http\Controllers\Admin\SectionController;
+use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 Route::get('/', function () {
     return view('welcome');
@@ -44,7 +48,10 @@ Route::get('/dashboard', function () {
         ->name('admin.')
         ->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-            // Admin ගේ අනිත් routes මෙතන
+            Route::resource('grades', GradeController::class);
+            Route::resource('sections', SectionController::class);
+            Route::resource('students', StudentController::class);
+            Route::resource('staff', StaffController::class);
         });
 
     // Accountant Dashboard
@@ -53,7 +60,7 @@ Route::get('/dashboard', function () {
         ->name('accountant.')
         ->group(function () {
             Route::get('/dashboard', [AccountantDashboardController::class, 'index'])->name('dashboard');
-            // Accountant ගේ අනිත් routes මෙතන
+
         });
 
     // Teacher Dashboard
@@ -62,7 +69,7 @@ Route::get('/dashboard', function () {
         ->name('teacher.')
         ->group(function () {
             Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
-            // Teacher ගේ අනිත් routes මෙතන
+
         });
 
 
