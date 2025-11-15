@@ -14,4 +14,18 @@ class Staff extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function allowances()
+    {
+        return $this->hasMany(Allowance::class);
+    }
+
+    public function deductions()
+    {
+        return $this->hasMany(Deduction::class);
+    }
+
+    public function payrolls()
+    {
+        return $this->hasMany(Payroll::class);
+    }
 }

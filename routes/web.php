@@ -1,14 +1,18 @@
 <?php
 
 use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\Admin\StaffPayrollController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Accountant\DashboardController as AccountantDashboardController;
+use App\Http\Controllers\Admin\AllowanceController;
+use App\Http\Controllers\Admin\DeductionController;
 use App\Http\Controllers\Admin\FeeCategoryController;
 use App\Http\Controllers\Admin\FeeStructureController;
 use App\Http\Controllers\Admin\GradeController;
+use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StudentController;
@@ -55,6 +59,14 @@ Route::get('/dashboard', function () {
             Route::resource('sections', SectionController::class);
             Route::resource('students', StudentController::class);
             Route::resource('staff', StaffController::class);
+
+            Route::get('staff/{staff}/payroll', [StaffPayrollController::class, 'edit'])->name('staff.payroll.edit');
+            Route::post('staff/{staff}/allowances', [AllowanceController::class, 'store'])->name('staff.allowances.store');
+            Route::delete('allowances/{allowance}', [AllowanceController::class, 'destroy'])->name('allowances.destroy');
+
+            // Routes for Staff Deductions
+            Route::post('staff/{staff}/deductions', [DeductionController::class, 'store'])->name('staff.deductions.store');
+            Route::delete('deductions/{deduction}', [DeductionController::class, 'destroy'])->name('deductions.destroy');
         });
 
         // Accountant Dashboard
@@ -93,7 +105,16 @@ Route::get('/dashboard', function () {
             Route::resource('invoices', InvoiceController::class)->only([
                 'index', 'show', 'destroy'
             ]);
+            // Payroll Processing
+            Route::get('payroll/process', [PayrollController::class, 'showProcessForm'])->name('payroll.process.form');
+            Route::post('payroll/process', [PayrollController::class, 'processPayroll'])->name('payroll.process');
 
+            // Payroll List & Payslip
+            Route::get('payroll', [PayrollController::class, 'index'])->name('payroll.index');
+            Route::get('payroll/{payroll}/payslip', [PayrollController::class, 'showPayslip'])->name('payroll.payslip');
+            Route::delete('payroll/{payroll}', [PayrollController::class, 'destroy'])->name('payroll.destroy');
+            
+            Route::post('payroll/{payroll}/toggle-status', [PayrollController::class, 'toggleStatus'])->name('payroll.toggleStatus');
     });
 
 require __DIR__.'/auth.php';

@@ -48,6 +48,9 @@
                                         <a href="{{ route('admin.staff.edit', $staff->id) }}" class="text-indigo-600 hover:text-indigo-900">
                                             View/Edit
                                         </a>
+                                        <a href="{{ route('admin.staff.payroll.edit', $staff->id) }}" class="text-green-600 hover:text-green-900 ml-4">
+                                            Payroll
+                                        </a>
 
                                         <form class="inline" method="POST" action="{{ route('admin.staff.destroy', $staff->id) }}"
                                             onsubmit="return confirm('Are you sure you want to delete this staff member? This will also delete their login account.');">
