@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Grade extends Model
+class FeeCategory extends Model
 {
     use HasFactory;
-    protected $fillable = ['name']; // Mass assignment සඳහා
+    protected $fillable = ['name'];
 
-    public function sections()
-    {
-        return $this->hasMany(Section::class);
-    }
     public function feeStructures()
     {
         return $this->hasMany(FeeStructure::class);
+    }
+
+    public function invoiceItems()
+    {
+        return $this->hasMany(InvoiceItem::class);
     }
 }

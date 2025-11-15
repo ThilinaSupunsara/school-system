@@ -15,4 +15,9 @@ class Student extends Model
     {
         return $this->belongsTo(Section::class);
     }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }
