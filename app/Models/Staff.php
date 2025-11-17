@@ -28,4 +28,9 @@ class Staff extends Model
     {
         return $this->hasMany(Payroll::class);
     }
+    public function classSection()
+    {
+        // Staff කෙනෙක් class teacher ද කියලා බලන්න
+        return $this->hasOne(Section::class, 'class_teacher_id');
+    }
 }

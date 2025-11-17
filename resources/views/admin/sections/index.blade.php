@@ -34,6 +34,9 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Grade
                                 </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Class Teacher
+                                </th>
                                 <th scope="col" class="relative px-6 py-3">
                                     <span class="sr-only">Edit</span>
                                 </th>
@@ -46,11 +49,23 @@
                                         {{ $section->name }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $section->grade->name }} </td>
+                                        {{ $section->grade->name }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if ($section->classTeacher)
+                                            {{ $section->classTeacher->user->name }}
+                                        @else
+                                            <span class="text-gray-400">Not Assigned</span>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 
                                     <a href="{{ route('admin.sections.edit', $section->id) }}" class="text-indigo-600 hover:text-indigo-900">
                                         Edit
+                                    </a>
+
+                                    <a href="{{ route('admin.sections.assign_teacher.form', $section->id) }}" class="text-green-600 hover:text-green-900 ml-4">
+                                        Assign Teacher
                                     </a>
 
                                     <form class="inline" method="POST" action="{{ route('admin.sections.destroy', $section->id) }}"

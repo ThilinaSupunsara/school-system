@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Grade;
 use App\Models\Section;
+use App\Models\Staff;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,8 @@ class SectionController extends Controller
      */
     public function index()
     {
-        $sections = Section::with('grade')->get();
+            // grade එකත් එක්කම, classTeacher සහ ඒ teacher ගේ user details ගමු
+        $sections = Section::with('grade', 'classTeacher.user')->get();
 
         return view('admin.sections.index', compact('sections'));
     }
@@ -107,10 +109,55 @@ class SectionController extends Controller
 
         } catch (QueryException $e) {
 
-            
+
             return redirect()->route('admin.sections.index')
                              ->with('error', 'Cannot delete this section. Students are still assigned to it.');
         }
 
+    }
+
+    public function showAssignTeacherForm(Section $section)
+    {
+        // Section එකත් එක්කම, දැනට ඉන්න teacher වත් load කරගන්නවා
+        $section->load('classTeacher.user');
+
+        // Teacher dropdown එකට data
+        $teachers = Staff::whereHas('user', function ($query) {
+            $query->where('role', 'teacher');
+        })->get();
+
+        // අලුත් view එකකට යවනවා
+        return view('admin.sections.assign_teacher', compact('section', 'teachers'));
+    }
+
+    /**
+     * Store the assigned class teacher.
+     */
+    public function storeAssignTeacher(Request $request, Section $section)
+    {
+        $request->validate([
+            'class_teacher_id' => 'required|exists:staff,id',
+        ]);
+
+        $section->update([
+            'class_teacher_id' => $request->class_teacher_id,
+        ]);
+
+        return redirect()->route('admin.sections.assign_teacher.form', $section->id)
+                         ->with('success', 'Class Teacher assigned successfully.');
+    }
+
+    /**
+     * Remove the assigned class teacher.
+     */
+    public function removeAssignTeacher(Section $section)
+    {
+        // Teacher ව null කරනවා
+        $section->update([
+            'class_teacher_id' => null,
+        ]);
+
+        return redirect()->route('admin.sections.assign_teacher.form', $section->id)
+                         ->with('success', 'Class Teacher removed successfully.');
     }
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Section extends Model
 {
     use HasFactory;
-    protected $fillable = ['grade_id', 'name']; // Mass assignment සඳහා
+    protected $fillable = ['grade_id', 'name','class_teacher_id']; // Mass assignment සඳහා
 
     public function grade()
     {
@@ -17,5 +17,11 @@ class Section extends Model
     public function students()
     {
         return $this->hasMany(Student::class);
+    }
+
+    public function classTeacher()
+    {
+        // 'class_teacher_id' column එක 'staff' model එකට join කරනවා
+        return $this->belongsTo(Staff::class, 'class_teacher_id');
     }
 }

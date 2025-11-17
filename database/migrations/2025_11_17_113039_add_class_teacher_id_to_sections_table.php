@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('sections', function (Blueprint $table) {
+            $table->foreignId('class_teacher_id')
+                  ->nullable() // Class teacher කෙනෙක් assign කරලා නැති වෙන්න පුළුවන්
+                  ->after('name')
+                  ->constrained('staff') // 'staff' table එකට සම්බන්ධ කරනවා
+                  ->onDelete('set null'); // Teacher delete වුණොත්, section එක delete වෙන්නේ නෑ, null වෙනවා
+
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('sections', function (Blueprint $table) {
+            // Foreign key එක අයින් කරන්න (PostgreSQL/MySQL දෙකටම වැඩ)
+            $table->dropForeign(['class_teacher_id']);
+            // Column එක අයින් කරන්න
+            $table->dropColumn('class_teacher_id');
+        });
+    }
+};

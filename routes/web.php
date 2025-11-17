@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StaffPayrollController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,8 @@ use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
+use App\Http\Controllers\Teacher\TeacherPayrollController;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -67,6 +70,14 @@ Route::get('/dashboard', function () {
             // Routes for Staff Deductions
             Route::post('staff/{staff}/deductions', [DeductionController::class, 'store'])->name('staff.deductions.store');
             Route::delete('deductions/{deduction}', [DeductionController::class, 'destroy'])->name('deductions.destroy');
+            // 1. Assign Teacher Form එක පෙන්වන route (GET)
+            Route::get('sections/{section}/assign-teacher', [SectionController::class, 'showAssignTeacherForm'])->name('sections.assign_teacher.form');
+
+            // 2. Teacher ව assign කරලා save කරන route (POST)
+            Route::post('sections/{section}/assign-teacher', [SectionController::class, 'storeAssignTeacher'])->name('sections.assign_teacher.store');
+
+            // 3. Teacher ව අයින් කරන (Remove) route (DELETE)
+            Route::delete('sections/{section}/remove-teacher', [SectionController::class, 'removeAssignTeacher'])->name('sections.assign_teacher.remove');
         });
 
         // Accountant Dashboard
@@ -84,6 +95,12 @@ Route::get('/dashboard', function () {
         ->name('teacher.')
         ->group(function () {
             Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
+
+            // අලුතින් හදන Payslips List Page
+            Route::get('my-payslips', [TeacherPayrollController::class, 'index'])->name('payroll.index');
+
+            // අලුතින් හදන Payslip View Page (Security Check එකක් එක්ක)
+            Route::get('my-payslips/{payroll}', [TeacherPayrollController::class, 'show'])->name('payroll.show');
 
         });
 
@@ -113,8 +130,10 @@ Route::get('/dashboard', function () {
             Route::get('payroll', [PayrollController::class, 'index'])->name('payroll.index');
             Route::get('payroll/{payroll}/payslip', [PayrollController::class, 'showPayslip'])->name('payroll.payslip');
             Route::delete('payroll/{payroll}', [PayrollController::class, 'destroy'])->name('payroll.destroy');
-            
+
             Route::post('payroll/{payroll}/toggle-status', [PayrollController::class, 'toggleStatus'])->name('payroll.toggleStatus');
+            Route::get('reports/outstanding-fees', [ReportController::class, 'outstandingFees'])->name('reports.outstanding');
+            Route::get('reports/salary-sheet', [ReportController::class, 'salarySheet'])->name('reports.salary_sheet');
     });
 
 require __DIR__.'/auth.php';
