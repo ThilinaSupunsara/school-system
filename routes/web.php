@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Teacher\AttendanceController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\TeacherPayrollController;
 
@@ -101,6 +102,14 @@ Route::get('/dashboard', function () {
 
             // අලුතින් හදන Payslip View Page (Security Check එකක් එක්ක)
             Route::get('my-payslips/{payroll}', [TeacherPayrollController::class, 'show'])->name('payroll.show');
+                // 1. පන්ති තෝරන List එක පෙන්වන route (GET)
+            Route::get('attendance', [AttendanceController::class, 'showClassList'])->name('attendance.class_list');
+
+            // 2. Attendance mark කරන form එක පෙන්වන route (GET)
+            Route::get('attendance/{section}', [AttendanceController::class, 'showMarkForm'])->name('attendance.mark.form');
+
+            // 3. Attendance save කරන route (POST)
+            Route::post('attendance/{section}', [AttendanceController::class, 'storeAttendance'])->name('attendance.mark.store');
 
         });
 
