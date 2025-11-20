@@ -16,8 +16,22 @@
     <div class="max-w-2xl mx-auto bg-white shadow-lg rounded-lg my-8 p-8">
 
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold">Your School Name</h1>
-            <p class="text-gray-600">Address of your school, City</p>
+
+            @if(isset($schoolSettings) && $schoolSettings->logo_path)
+                <img src="{{ asset('storage/' . $schoolSettings->logo_path) }}" alt="Logo" class="h-20 mx-auto mb-2 object-contain">
+            @endif
+
+            <h1 class="text-3xl font-bold uppercase">
+                {{ $schoolSettings->school_name ?? 'Your School Name' }}
+            </h1>
+
+            <p class="text-gray-600">
+                {{ $schoolSettings->school_address ?? 'School Address' }} <br>
+                {{ $schoolSettings->phone ?? '' }} | {{ $schoolSettings->email ?? '' }}
+            </p>
+
+            <hr class="mt-4 border-gray-300">
+
             <h2 class="text-2xl font-semibold mt-4">Payslip for {{ \Carbon\Carbon::create()->month($payroll->month)->format('F') }} {{ $payroll->year }}</h2>
         </div>
 

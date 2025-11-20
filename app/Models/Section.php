@@ -24,4 +24,9 @@ class Section extends Model
         // 'class_teacher_id' column එක 'staff' model එකට join කරනවා
         return $this->belongsTo(Staff::class, 'class_teacher_id');
     }
+    public function attendances()
+    {
+        // Section එකකට Attendances ගොඩක් තියෙනවා, හැබැයි Students හරහා
+        return $this->hasManyThrough(Attendance::class, Student::class);
+    }
 }

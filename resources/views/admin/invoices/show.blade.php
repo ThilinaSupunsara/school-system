@@ -33,6 +33,25 @@
                 <div class="md:col-span-2">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900">
+                            <div class="border-b pb-6 mb-6 flex justify-between items-center">
+                                <div class="flex items-center gap-4">
+                                    @if(isset($schoolSettings) && $schoolSettings->logo_path)
+                                        <img src="{{ asset('storage/' . $schoolSettings->logo_path) }}" alt="Logo" class="h-16 w-auto object-contain">
+                                    @endif
+
+                                    <div>
+                                        <h1 class="text-2xl font-bold uppercase text-gray-800">
+                                            {{ $schoolSettings->school_name ?? 'Your School Name' }}
+                                        </h1>
+                                        <p class="text-sm text-gray-500">
+                                            {{ $schoolSettings->school_address ?? '' }}
+                                        </p>
+                                        <p class="text-sm text-gray-500">
+                                            {{ $schoolSettings->phone ?? '' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="flex justify-between items-start mb-6">
                                 <div>
                                     <h3 class="text-lg font-medium text-gray-900">Invoice to:</h3>

@@ -53,8 +53,11 @@
                                 <label for="role" class="block font-medium text-sm text-gray-700">{{ __('Role') }}</label>
                                 <select name="role" id="role" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" required>
                                     <option value="">{{ __('Select a Role') }}</option>
-                                    <option value="accountant">Accountant</option>
-                                    <option value="teacher">Teacher</option>
+
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
+                                    @endforeach
+
                                 </select>
                             </div>
 

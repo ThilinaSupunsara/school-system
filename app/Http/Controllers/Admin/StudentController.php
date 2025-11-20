@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Grade;
 use App\Models\Section;
 use App\Models\Student;
 use Illuminate\Database\QueryException;
@@ -13,11 +14,46 @@ class StudentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $students = Student::with('section.grade')->get();
+        // 1. Filters walata awashya Data gannawa
+        $grades = Grade::all();
+        $sections = Section::all();
 
-        return view('admin.students.index', compact('students'));
+        // 2. Query eka patan gannawa (With Eager Loading)
+        $query = Student::with('section.grade');
+
+        // --- Filter Logic ---
+
+        // Grade eka thorala nam
+        if ($request->filled('grade_id')) {
+            $query->whereHas('section', function($q) use ($request) {
+                $q->where('grade_id', $request->grade_id);
+            });
+        }
+
+        // Section eka thorala nam
+        if ($request->filled('section_id')) {
+            $query->where('section_id', $request->section_id);
+        }
+
+        // Search keyword (Name ho Admission No)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('admission_no', 'like', "%{$search}%");
+            });
+        }
+
+        // 3. Data gannawa (Pagination ekka)
+        // paginate(10) = Page ekaka 10 denai
+        // appends() = Page maru weddi filters nathi wenne nathuwa thiyagannawa
+        $students = $query->orderBy('id', 'desc')
+                          ->paginate(10)
+                          ->appends($request->all());
+
+        return view('admin.students.index', compact('students', 'grades', 'sections'));
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Staff;
 use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +27,8 @@ class StaffController extends Controller
      */
     public function create()
     {
-        return view('admin.staff.create');
+        $roles = UserRole::where('name', '!=', 'admin')->get();
+        return view('admin.staff.create', compact('roles'));
     }
 
     /**
@@ -39,7 +41,7 @@ class StaffController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:accountant,teacher'],
+            'role' => ['required', 'exists:user_roles,name'],
 
             // Staff Details
             'designation' => ['required', 'string', 'max:255'],

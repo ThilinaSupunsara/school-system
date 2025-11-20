@@ -15,8 +15,10 @@ use App\Http\Controllers\Admin\FeeStructureController;
 use App\Http\Controllers\Admin\GradeController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\SectionController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Teacher\AttendanceController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\TeacherPayrollController;
@@ -79,6 +81,13 @@ Route::get('/dashboard', function () {
 
             // 3. Teacher ව අයින් කරන (Remove) route (DELETE)
             Route::delete('sections/{section}/remove-teacher', [SectionController::class, 'removeAssignTeacher'])->name('sections.assign_teacher.remove');
+
+            Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
+            Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+
+            Route::get('roles', [UserRoleController::class, 'index'])->name('roles.index');
+    Route::post('roles', [UserRoleController::class, 'store'])->name('roles.store');
+    Route::delete('roles/{role}', [UserRoleController::class, 'destroy'])->name('roles.destroy');
         });
 
         // Accountant Dashboard
@@ -143,6 +152,19 @@ Route::get('/dashboard', function () {
             Route::post('payroll/{payroll}/toggle-status', [PayrollController::class, 'toggleStatus'])->name('payroll.toggleStatus');
             Route::get('reports/outstanding-fees', [ReportController::class, 'outstandingFees'])->name('reports.outstanding');
             Route::get('reports/salary-sheet', [ReportController::class, 'salarySheet'])->name('reports.salary_sheet');
+    });
+
+    Route::middleware(['auth', 'role:admin,teacher'])
+            ->prefix('attendance')
+            ->name('attendance.')
+            ->group(function () {
+            Route::get('reports/attendance/daily', [ReportController::class, 'dailyAttendance'])->name('reports.attendance.daily');
+
+
+            Route::get('reports/attendance/student', [ReportController::class, 'studentMonthlyAttendance'])->name('reports.attendance.student');
+
+            Route::get('reports/attendance/class', [ReportController::class, 'classAttendance'])->name('reports.attendance.class');
+
     });
 
 require __DIR__.'/auth.php';
