@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\FeeCategoryController;
 use App\Http\Controllers\Admin\FeeStructureController;
 use App\Http\Controllers\Admin\GradeController;
 use App\Http\Controllers\Admin\PayrollController;
+use App\Http\Controllers\Admin\ScholarshipController;
 use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StaffController;
@@ -86,8 +87,18 @@ Route::get('/dashboard', function () {
             Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
 
             Route::get('roles', [UserRoleController::class, 'index'])->name('roles.index');
-    Route::post('roles', [UserRoleController::class, 'store'])->name('roles.store');
-    Route::delete('roles/{role}', [UserRoleController::class, 'destroy'])->name('roles.destroy');
+            Route::post('roles', [UserRoleController::class, 'store'])->name('roles.store');
+            Route::delete('roles/{role}', [UserRoleController::class, 'destroy'])->name('roles.destroy');
+
+            // Scholarships Management
+            Route::get('scholarships', [ScholarshipController::class, 'index'])->name('scholarships.index');
+            Route::post('scholarships', [ScholarshipController::class, 'store'])->name('scholarships.store');
+            Route::delete('scholarships/{scholarship}', [ScholarshipController::class, 'destroy'])->name('scholarships.destroy');
+
+            // Assign to Student Routes
+            Route::get('students/{student}/scholarships', [ScholarshipController::class, 'assignForm'])->name('students.scholarships.assign');
+            Route::post('students/{student}/scholarships', [ScholarshipController::class, 'assignStore'])->name('students.scholarships.store');
+            Route::delete('students/{student}/scholarships/{scholarship}', [ScholarshipController::class, 'assignDestroy'])->name('students.scholarships.destroy');
         });
 
         // Accountant Dashboard
@@ -133,25 +144,39 @@ Route::get('/dashboard', function () {
             Route::resource('fee-structures', FeeStructureController::class);
 
             // Invoice Generation
+            Route::get('invoices/export-pdf', [InvoiceController::class, 'exportPdf'])->name('invoices.export_pdf');
             Route::get('invoices/generate', [InvoiceController::class, 'showGenerateForm'])->name('invoices.generate.form');
             Route::post('invoices/generate', [InvoiceController::class, 'processGenerate'])->name('invoices.generate.process');
             Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'storePayment'])->name('invoices.storePayment');
+            Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
             // Standard Invoice Resource (List බලන්න, delete කරන්න)
             Route::resource('invoices', InvoiceController::class)->only([
                 'index', 'show', 'destroy'
             ]);
             // Payroll Processing
+            Route::get('payroll/export-pdf', [PayrollController::class, 'exportPdf'])->name('payroll.export_pdf');
             Route::get('payroll/process', [PayrollController::class, 'showProcessForm'])->name('payroll.process.form');
             Route::post('payroll/process', [PayrollController::class, 'processPayroll'])->name('payroll.process');
 
             // Payroll List & Payslip
             Route::get('payroll', [PayrollController::class, 'index'])->name('payroll.index');
-            Route::get('payroll/{payroll}/payslip', [PayrollController::class, 'showPayslip'])->name('payroll.payslip');
             Route::delete('payroll/{payroll}', [PayrollController::class, 'destroy'])->name('payroll.destroy');
+            Route::get('payroll/{payroll}', [PayrollController::class, 'show'])->name('payroll.show');
+            Route::post('payroll/{payroll}/payments', [PayrollController::class, 'storePayment'])->name('payroll.payments.store');
+            Route::get('payroll/{payroll}/print', [PayrollController::class, 'printPayslip'])->name('payroll.print');
 
-            Route::post('payroll/{payroll}/toggle-status', [PayrollController::class, 'toggleStatus'])->name('payroll.toggleStatus');
+
             Route::get('reports/outstanding-fees', [ReportController::class, 'outstandingFees'])->name('reports.outstanding');
             Route::get('reports/salary-sheet', [ReportController::class, 'salarySheet'])->name('reports.salary_sheet');
+
+            Route::get('reports/outstanding-fees/pdf', [ReportController::class, 'exportOutstandingFeesPdf'])->name('reports.outstanding.pdf');
+            Route::get('reports/salary-sheet/pdf', [ReportController::class, 'exportSalarySheetPdf'])->name('reports.salary_sheet.pdf');
+            Route::get('reports/attendance/daily/pdf', [ReportController::class, 'exportDailyAttendancePdf'])->name('reports.attendance.daily.pdf');
+            Route::get('reports/attendance/class/pdf', [ReportController::class, 'exportClassAttendancePdf'])->name('reports.attendance.class.pdf');
+            Route::get('reports/attendance/student/pdf', [ReportController::class, 'exportStudentAttendancePdf'])->name('reports.attendance.student.pdf');
+
+
+            Route::post('invoices/{invoice}/mark-settled', [InvoiceController::class, 'markAsSettled'])->name('invoices.settle');
     });
 
     Route::middleware(['auth', 'role:admin,teacher'])

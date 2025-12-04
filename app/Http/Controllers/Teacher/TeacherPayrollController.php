@@ -26,20 +26,24 @@ class TeacherPayrollController extends Controller
     /**
      * Display a specific payslip, ONLY IF it belongs to the logged-in teacher.
      */
+    /**
+     * Display a specific payslip.
+     */
     public function show(Payroll $payroll)
     {
         // 1. Logged-in user ගේ Staff ID එක ගන්න
         $staffId = Auth::user()->staff->id;
 
-        // 2. Security Check:
-        // මේ බලන්න හදන payslip ($payroll) එකේ staff_id එක
-        // login වෙලා ඉන්න user ගේ staff_id එකට සමානද?
+        // 2. Security Check (මේක තමන්ගේ පඩිපතද?)
         if ($payroll->staff_id != $staffId) {
-            // සමාන නැත්නම්, "තහනම්" (Forbidden)
             abort(403, 'THIS IS NOT YOUR PAYSLIP.');
         }
 
-        // 3. සමාන නම්, Admin ලා බලන payslip view එකම reuse කරමු
-        return view('admin.payroll.payslip', compact('payroll'));
+        // 3. School Settings ගන්න (Header එකට ඕන නිසා)
+        $schoolSettings = \App\Models\SchoolSetting::first();
+
+        // 4. අලුත් Print View එකට යවනවා
+        // (අපි Admin ට හදපු ලස්සන Print view එකම පාවිච්චි කරමු)
+        return view('admin.payroll.print_payslip', compact('payroll', 'schoolSettings'));
     }
 }

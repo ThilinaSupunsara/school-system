@@ -131,8 +131,10 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('admin.students.edit', $student->id) }}" class="text-indigo-600 hover:text-indigo-900">View/Edit</a>
 
+
                                             </td>
-                                            <td>
+                                            
+                                        <td>
                                             <form class="inline" method="POST" action="{{ route('admin.students.destroy', $student->id) }}"
                                             onsubmit="return confirm('Are you sure you want to delete this student?');">
 

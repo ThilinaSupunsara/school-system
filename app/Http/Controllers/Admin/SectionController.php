@@ -14,12 +14,37 @@ class SectionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-            // grade එකත් එක්කම, classTeacher සහ ඒ teacher ගේ user details ගමු
-        $sections = Section::with('grade', 'classTeacher.user')->get();
+        // 1. Filter Dropdowns සඳහා Data
+        $grades = Grade::all();
+        $allSections = Section::all(); // මෙය Dropdown එක පිරවීමට පමණයි
 
-        return view('admin.sections.index', compact('sections'));
+        // 2. Query එක පටන් ගන්නවා
+        $query = Section::with('grade', 'classTeacher.user');
+
+        // --- Filter Logic ---
+
+        // Grade Filter
+        if ($request->filled('grade_id')) {
+            $query->where('grade_id', $request->grade_id);
+        }
+
+        // Section Dropdown Filter (කලින් තිබ්බ Search Text එක වෙනුවට)
+        if ($request->filled('section_id')) {
+            // Ambiguous error එන එක නවත්වන්න table නම එක්කම දාමු
+            $query->where('sections.id', $request->section_id);
+        }
+
+        // 3. Data ගන්නවා (Pagination 10)
+        $sections = $query->join('grades', 'sections.grade_id', '=', 'grades.id')
+                          ->orderBy('grades.name')
+                          ->orderBy('sections.name')
+                          ->select('sections.*')
+                          ->paginate(10)
+                          ->appends($request->all());
+
+        return view('admin.sections.index', compact('sections', 'grades', 'allSections'));
     }
 
     /**

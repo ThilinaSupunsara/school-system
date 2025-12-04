@@ -7,7 +7,9 @@ use App\Models\FeeCategory;
 use App\Models\FeeStructure;
 use App\Models\Grade;
 use App\Models\Invoice;
+use App\Models\Section;
 use App\Models\Student;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,15 +18,57 @@ class InvoiceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $invoices = Invoice::with('student.section.grade')
-                             ->latest()
-                             ->paginate(20); // පිටු (Pagination) දාමු
+        // 1. Filters sadaha Data gannawa
+        $grades = Grade::all();
+        $sections = Section::all();
 
-        return view('admin.invoices.index', compact('invoices'));
+        // 2. Query eka patan gannawa
+        $query = Invoice::with('student.section.grade');
+
+        // --- Filter Logic ---
+
+        // Grade Filter (Student haraha Section haraha Grade eka check karanawa)
+        if ($request->filled('grade_id')) {
+            $query->whereHas('student.section', function ($q) use ($request) {
+                $q->where('grade_id', $request->grade_id);
+            });
+        }
+
+        // Section Filter
+        if ($request->filled('section_id')) {
+            $query->whereHas('student', function ($q) use ($request) {
+                $q->where('section_id', $request->section_id);
+            });
+        }
+
+        // Search Student (Name or Admission No)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('admission_no', 'like', "%{$search}%");
+            });
+        }
+
+        // Status Filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Due Date Filter
+        if ($request->filled('due_date')) {
+            $query->whereDate('due_date', $request->due_date);
+        }
+
+        // 3. Pagination (10 bagin) saha Appends (Filters රැකගැනීමට)
+        $invoices = $query->latest()
+                          ->paginate(10)
+                          ->appends($request->all());
+
+        return view('admin.invoices.index', compact('invoices', 'grades', 'sections'));
     }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -84,11 +128,11 @@ class InvoiceController extends Controller
 
     public function showGenerateForm()
     {
-        // Form එකේ dropdowns වලට data
         $grades = Grade::all();
         $feeCategories = FeeCategory::all();
+        $sections = Section::all(); // <-- 1. Sections ටිකත් View එකට යවමු
 
-        return view('admin.invoices.generate', compact('grades', 'feeCategories'));
+        return view('admin.invoices.generate', compact('grades', 'feeCategories', 'sections'));
     }
 
     public function processGenerate(Request $request)
@@ -96,12 +140,13 @@ class InvoiceController extends Controller
         // 1. Validation
         $request->validate([
             'grade_id' => 'required|exists:grades,id',
+            'section_id' => 'nullable|exists:sections,id', // Optional: specific class
             'fee_category_id' => 'required|exists:fee_categories,id',
             'invoice_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:invoice_date',
         ]);
 
-        // 2. අදාළ Fee Structure එක සහ ගාණ හොයාගන්නවා
+        // 2. Find Fee Structure (Based on Grade)
         $feeStructure = FeeStructure::where('grade_id', $request->grade_id)
                                     ->where('fee_category_id', $request->fee_category_id)
                                     ->first();
@@ -110,53 +155,70 @@ class InvoiceController extends Controller
             return back()->with('error', 'No matching Fee Structure found for this Grade and Category.');
         }
 
-        $amount = $feeStructure->amount;
+        $baseAmount = $feeStructure->amount;
 
-        // 3. අදාළ Grade එකේ (සහ ඊට අදාළ sections වල) ශිෂ්‍යයින්ව හොයාගන්නවා
-        $students = Student::whereHas('section', function ($query) use ($request) {
-            $query->where('grade_id', $request->grade_id);
-        })->get();
+        // 3. Get Students (With Scholarships Eager Loaded)
+        $studentsQuery = Student::with('scholarships'); // Important: Load scholarships to avoid N+1 issue
 
-        if ($students->isEmpty()) {
-            return back()->with('error', 'No students found in this grade.');
+        if ($request->filled('section_id')) {
+            // If a specific section is selected
+            $studentsQuery->where('section_id', $request->section_id);
+        } else {
+            // Otherwise, get all students in that Grade
+            $studentsQuery->whereHas('section', function ($query) use ($request) {
+                $query->where('grade_id', $request->grade_id);
+            });
         }
 
-        // 4. Database Transaction එකක් පටන් ගන්නවා
-        // (Invoice 100ක් හදද්දී 50දි fail වුණොත්, 50ම rollback කරන්න)
+        $students = $studentsQuery->get();
+
+        if ($students->isEmpty()) {
+            return back()->with('error', 'No students found to generate invoices.');
+        }
+
+        // 4. Start Transaction & Generate
         DB::beginTransaction();
         try {
-
             $generatedCount = 0;
+
             foreach ($students as $student) {
 
-                // 5. අලුත් Invoice එකක් හදනවා
+                // --- Calculate Discount ---
+                // Sum up all active scholarships assigned to this student
+                $discountAmount = $student->scholarships->sum('amount');
+
+                // Final Invoice Amount (Cannot be less than 0)
+                $finalAmount = max(0, $baseAmount - $discountAmount);
+
+                // --- Create Invoice ---
                 $invoice = $student->invoices()->create([
                     'invoice_date' => $request->invoice_date,
                     'due_date' => $request->due_date,
-                    'total_amount' => $amount,
+                    'total_amount' => $finalAmount, // The discounted amount
                     'paid_amount' => 0,
                     'status' => 'pending',
                 ]);
 
-                // 6. ඊට අදාළ Invoice Item එක හදනවා
+                // --- Create Invoice Item ---
+                // We record the ORIGINAL fee category here.
+                // Note: Ideally, you might want to add a separate item for the discount,
+                // but for now, just recording the fee category is sufficient.
                 $invoice->invoiceItems()->create([
                     'fee_category_id' => $request->fee_category_id,
-                    'amount' => $amount,
+                    'amount' => $baseAmount, // The original fee amount
                 ]);
 
                 $generatedCount++;
             }
 
-            // 7. Transaction එක Commit කරනවා (සාර්ථකයි)
             DB::commit();
 
-            return redirect()->route('finance.invoices.index') // Invoice list එකට යවමු
-                            ->with('success', "$generatedCount invoices generated successfully for " . $students->first()->section->grade->name . ".");
+            return redirect()->route('finance.invoices.index')
+                             ->with('success', "$generatedCount invoices generated successfully.");
 
         } catch (\Exception $e) {
-            // 8. Transaction එක Rollback කරනවා (අසාර්ථකයි)
             DB::rollBack();
-            return back()->with('error', 'An error occurred during invoice generation. No invoices were created. Error: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred during generation: ' . $e->getMessage());
         }
     }
 
@@ -205,5 +267,81 @@ class InvoiceController extends Controller
             DB::rollBack();
             return back()->with('error', 'An error occurred while recording payment. Error: ' . $e->getMessage());
         }
+    }
+
+    public function print(Invoice $invoice)
+    {
+        // Invoice Data ගන්නවා
+        $invoice->load('student.section.grade', 'invoiceItems.feeCategory', 'payments');
+
+        // Balance එක
+        $balance = $invoice->total_amount - $invoice->paid_amount;
+
+        return view('admin.invoices.print', compact('invoice', 'balance'));
+    }
+
+    public function markAsSettled(Invoice $invoice)
+    {
+        // Security Check: ගාණ 0 නම් විතරයි මේක කරන්න පුළුවන්
+        if ($invoice->total_amount > 0) {
+            return back()->with('error', 'This invoice has a balance. Please record a payment.');
+        }
+
+        // Status එක කෙලින්ම 'paid' කරනවා
+        $invoice->update([
+            'status' => 'paid',
+            'paid_amount' => 0, // 0 ම තමයි, ඒත් sure වෙන්න දානවා
+        ]);
+
+        return back()->with('success', 'Invoice marked as settled (Full Scholarship).');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        // 1. Query එක පටන් ගන්නවා (Filter Logic එකමයි)
+        $query = Invoice::with('student.section.grade');
+
+        // --- Filter Logic (Same as index method) ---
+        if ($request->filled('grade_id')) {
+            $query->whereHas('student.section', function ($q) use ($request) {
+                $q->where('grade_id', $request->grade_id);
+            });
+        }
+        if ($request->filled('section_id')) {
+            $query->whereHas('student', function ($q) use ($request) {
+                $q->where('section_id', $request->section_id);
+            });
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('admission_no', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('due_date')) {
+            $query->whereDate('due_date', $request->due_date);
+        }
+
+        // 2. Data ගන්නවා (Pagination නෑ, ඔක්කොම ගන්නවා)
+        $invoices = $query->latest()->get();
+
+        // 3. Totals ගණනය කිරීම (Summary සඳහා)
+        $totalAmount = $invoices->sum('total_amount');
+        $totalPaid = $invoices->sum('paid_amount');
+        $totalDue = $totalAmount - $totalPaid;
+
+        // 4. PDF Load කිරීම
+        $schoolSettings = \App\Models\SchoolSetting::first();
+
+        $pdf = Pdf::loadView('admin.invoices.pdf_list', compact(
+            'invoices', 'totalAmount', 'totalPaid', 'totalDue', 'schoolSettings'
+        ));
+
+        // 5. Download
+        return $pdf->download('Invoices-Report-' . now()->format('Y-m-d') . '.pdf');
     }
 }

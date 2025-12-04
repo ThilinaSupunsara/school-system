@@ -20,6 +20,34 @@
                 display: flex;
                 align-items: center;
             }
+
+            /* 1. Scrollbar එකේ පළල (Width) */
+        ::-webkit-scrollbar {
+            width: 6px;  /* සිරස් (Vertical) Scrollbar පළල */
+            height: 6px; /* තිරස් (Horizontal) Scrollbar උස */
+        }
+
+        /* 2. Scrollbar Track (පසුබිම) */
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        /* 3. Scrollbar Thumb (අපිට අල්ලන්න පුළුවන් කොටස) */
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1; /* අළු පාට */
+            border-radius: 10px; /* රවුම් හැඩය */
+        }
+
+        /* 4. Mouse එක ළඟට ගෙනාවම පාට වෙනස් වීම */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Firefox සඳහා (Optional) */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
+        }
         </style>
     </head>
     <body class="font-sans antialiased" x-data="{ sidebarOpen: window.innerWidth >= 768 }">

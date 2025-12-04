@@ -7,8 +7,10 @@ use App\Models\Attendance;
 use App\Models\Grade;
 use App\Models\Invoice;
 use App\Models\Payroll;
+use App\Models\SchoolSetting;
 use App\Models\Section;
 use App\Models\Student;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -175,7 +177,7 @@ class ReportController extends Controller
             if ($selectedStudent) {
                 $month = $request->month;
                 $year = $request->year;
-                $daysInMonth = \Carbon\Carbon::createFromDate($year, $month)->daysInMonth;
+                $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
 
                 $records = Attendance::where('student_id', $request->student_id)
                                      ->whereYear('attendance_date', $year)
@@ -208,38 +210,30 @@ class ReportController extends Controller
      */
     public function classAttendance(Request $request)
     {
-        $grades = Grade::all();
-
-        // Section Dropdown එකට data (Grade එක select කරලා නම් filter වෙන්න ඕන නම් AJAX ඕන,
-        // දැනට අපි ඔක්කොම යවමු හෝ සරලව තියමු)
-        $sections = Section::with('grade')->get();
+        $grades = Grade::all(); // Grade Filter එකට
+        $sections = Section::all(); // All sections for filtering logic in JS
 
         $students = collect();
-        $attendanceMatrix = []; // [student_id][date_string] = status
+        $attendanceMatrix = [];
         $daysInMonth = 0;
         $selectedSection = null;
 
         if ($request->filled('section_id') && $request->filled('month') && $request->filled('year')) {
-
+            // (කලින් Logic එකමයි)
             $month = $request->month;
             $year = $request->year;
             $sectionId = $request->section_id;
 
             $selectedSection = Section::with('grade')->find($sectionId);
-            $daysInMonth = \Carbon\Carbon::createFromDate($year, $month)->daysInMonth;
+            $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
 
-            // 1. පන්තියේ ළමයි ටික ගන්නවා
-            $students = Student::where('section_id', $sectionId)
-                               ->orderBy('name')
-                               ->get();
+            $students = Student::where('section_id', $sectionId)->orderBy('name')->get();
 
-            // 2. මුළු පන්තියටම අදාළ Attendance Data ගන්නවා
             $attendances = Attendance::whereIn('student_id', $students->pluck('id'))
                                      ->whereYear('attendance_date', $year)
                                      ->whereMonth('attendance_date', $month)
                                      ->get();
 
-            // 3. Data Matrix එකක් හදනවා (View එකට ලේසි වෙන්න)
             foreach ($attendances as $att) {
                 $attendanceMatrix[$att->student_id][$att->attendance_date] = $att->status;
             }
@@ -249,5 +243,223 @@ class ReportController extends Controller
             'grades', 'sections', 'students', 'attendanceMatrix',
             'daysInMonth', 'selectedSection'
         ));
+    }
+
+    public function exportOutstandingFeesPdf(Request $request)
+    {
+        // 1. --- (FILTERING LOGIC - කලින් method එකේ තිබ්බ ටිකමයි) ---
+        $query = Invoice::with('student.section.grade')
+                        ->whereIn('status', ['pending', 'partial'])
+                        ->orderBy('due_date', 'asc');
+
+        if ($request->filled('grade_id')) {
+            $gradeId = $request->grade_id;
+            $query->whereHas('student.section', function ($q) use ($gradeId) {
+                $q->where('grade_id', $gradeId);
+            });
+        }
+
+        if ($request->filled('section_id')) {
+            $sectionId = $request->section_id;
+            $query->whereHas('student', function ($q) use ($sectionId) {
+                $q->where('section_id', $sectionId);
+            });
+        }
+
+        $invoices = $query->get();
+        $totalOutstanding = $invoices->sum(function($invoice) {
+            return $invoice->total_amount - $invoice->paid_amount;
+        });
+        // ---------------------------------------------------------
+
+        // 2. School Settings ගන්න (Header එකට)
+        $schoolSettings = SchoolSetting::first();
+
+        // 3. PDF එක Load කරනවා (අපි අලුත් clean view එකක් හදමු 'admin.reports.pdf.outstanding')
+        $pdf = Pdf::loadView('admin.reports.pdf.outstanding', compact('invoices', 'totalOutstanding', 'schoolSettings'));
+
+        $todayDate = now()->format('Y-m-d');
+
+        // නමට දිනය එකතු කරනවා
+        return $pdf->download('outstanding-fees-report-' . $todayDate . '.pdf');
+    }
+    public function exportSalarySheetPdf(Request $request)
+    {
+        // 1. Data ලබාගැනීම (salarySheet method එකේ logic එකමයි)
+        $validated = $request->validate([
+            'month' => 'nullable|integer|between:1,12',
+            'year' => 'nullable|integer|min:2020|max:2050',
+        ]);
+
+        $selectedMonth = (int)($validated['month'] ?? now()->month);
+        $selectedYear = (int)($validated['year'] ?? now()->year);
+
+        $payrolls = Payroll::with('staff.user')
+                            ->where('month', $selectedMonth)
+                            ->where('year', $selectedYear)
+                            ->get();
+
+        $totals = [
+            'basic' => $payrolls->sum('basic_salary'),
+            'allowances' => $payrolls->sum('total_allowances'),
+            'deductions' => $payrolls->sum('total_deductions'),
+            'net' => $payrolls->sum('net_salary'),
+        ];
+
+        // 2. School Settings ගන්න
+        $schoolSettings = SchoolSetting::first();
+
+        // 3. PDF එක Load කරනවා
+        $pdf = Pdf::loadView('admin.reports.pdf.salary_sheet', compact(
+            'payrolls',
+            'totals',
+            'selectedMonth',
+            'selectedYear',
+            'schoolSettings'
+        ));
+
+        // 4. Filename එක හදනවා (Salary-Sheet-November-2025.pdf)
+        $monthName = Carbon::create()->month($selectedMonth)->format('F');
+        $fileName = 'Salary-Sheet-' . $monthName . '-' . $selectedYear . '.pdf';
+
+        return $pdf->download($fileName);
+    }
+
+    public function exportDailyAttendancePdf(Request $request)
+    {
+        // 1. දිනය තෝරාගැනීම
+        $selectedDate = $request->input('date', Carbon::today()->format('Y-m-d'));
+
+        // 2. Data ලබාගැනීම (Sections සහ Attendance Counts)
+        $sections = Section::with(['grade', 'attendances' => function($query) use ($selectedDate) {
+            $query->whereDate('attendance_date', $selectedDate);
+        }])->withCount('students')->get();
+
+        // 3. Report Data සකස් කිරීම
+        $reportData = $sections->map(function ($section) {
+            $totalStudents = $section->students_count;
+            $present = $section->attendances->where('status', 'present')->count();
+            $absent = $section->attendances->where('status', 'absent')->count();
+            $late = $section->attendances->where('status', 'late')->count();
+            $notMarked = $totalStudents - ($present + $absent + $late);
+
+            return (object) [
+                'grade' => $section->grade->name,
+                'section' => $section->name,
+                'total' => $totalStudents,
+                'present' => $present,
+                'absent' => $absent,
+                'late' => $late,
+                'not_marked' => $notMarked,
+                'percentage' => $totalStudents > 0 ? round((($present + $late) / $totalStudents) * 100, 1) : 0,
+            ];
+        });
+
+        // 4. School Settings සහ PDF Load කිරීම
+        $schoolSettings = SchoolSetting::first();
+
+        $pdf = Pdf::loadView('admin.reports.pdf.daily_attendance', compact(
+            'reportData',
+            'selectedDate',
+            'schoolSettings'
+        ));
+
+        // 5. Download (Filename: Daily-Attendance-2025-11-27.pdf)
+        return $pdf->download('Daily-Attendance-' . $selectedDate . '.pdf');
+    }
+
+    public function exportClassAttendancePdf(Request $request)
+    {
+        // 1. Data ලබාගැනීම (ඉහත Logic එකමයි)
+        $month = $request->month;
+        $year = $request->year;
+        $sectionId = $request->section_id;
+
+        $selectedSection = Section::with('grade')->find($sectionId);
+        $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
+
+        $students = Student::where('section_id', $sectionId)->orderBy('name')->get();
+
+        $attendances = Attendance::whereIn('student_id', $students->pluck('id'))
+                                    ->whereYear('attendance_date', $year)
+                                    ->whereMonth('attendance_date', $month)
+                                    ->get();
+
+        $attendanceMatrix = [];
+        foreach ($attendances as $att) {
+            $attendanceMatrix[$att->student_id][$att->attendance_date] = $att->status;
+        }
+
+        $schoolSettings = SchoolSetting::first();
+
+       // PDF එක Load කිරීම
+        $pdf = Pdf::loadView('admin.reports.pdf.class_attendance', compact(
+            'students', 'attendanceMatrix', 'daysInMonth', 'selectedSection',
+            'month', 'year', 'schoolSettings'
+        ));
+
+        $pdf->setPaper('a4', 'landscape');
+
+        // ===== ගොනුවේ නම (Filename) සැකසීම =====
+        // Grade නමේ තියෙන හිස්තැන් (Spaces) ඉවත් කරමු (උදා: "Grade 6" -> "Grade-6")
+        $gradeName = str_replace(' ', '-', $selectedSection->grade->name);
+        $sectionName = $selectedSection->name;
+
+        // උදා: "Attendance_Grade-6-A_November-2025.pdf"
+        $fileName = 'Attendance_' . $gradeName . '-' . $sectionName . '_' . $month . '-' . $year . '.pdf';
+
+        return $pdf->download($fileName);
+    }
+
+    public function exportStudentAttendancePdf(Request $request)
+    {
+        // 1. Data Validate කිරීම
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'month' => 'required|integer|between:1,12',
+            'year' => 'required|integer|min:2020|max:2050',
+        ]);
+
+        $studentId = $request->student_id;
+        $month = $request->month;
+        $year = $request->year;
+
+        // 2. Data ලබාගැනීම
+        $selectedStudent = Student::with('section.grade')->find($studentId);
+        $daysInMonth = \Carbon\Carbon::createFromDate($year, $month)->daysInMonth;
+
+        $records = Attendance::where('student_id', $studentId)
+                             ->whereYear('attendance_date', $year)
+                             ->whereMonth('attendance_date', $month)
+                             ->get()
+                             ->keyBy('attendance_date');
+
+        $attendanceRecords = $records;
+
+        // 3. Summary ගණනය කිරීම
+        $summary = ['present' => 0, 'absent' => 0, 'late' => 0, 'total_days' => 0, 'percentage' => 0];
+        $summary['present'] = $records->where('status', 'present')->count();
+        $summary['absent'] = $records->where('status', 'absent')->count();
+        $summary['late'] = $records->where('status', 'late')->count();
+        $summary['total_days'] = $summary['present'] + $summary['absent'] + $summary['late'];
+
+        if ($summary['total_days'] > 0) {
+            $summary['percentage'] = round((($summary['present'] + $summary['late']) / $summary['total_days']) * 100, 1);
+        }
+
+        // 4. School Settings සහ PDF Load කිරීම
+        $schoolSettings = SchoolSetting::first();
+
+        $pdf = Pdf::loadView('admin.reports.pdf.student_monthly_attendance', compact(
+            'attendanceRecords', 'summary', 'selectedStudent', 'daysInMonth',
+            'month', 'year', 'schoolSettings'
+        ));
+
+        // 5. Filename එක සෑදීම (උදා: Report_Kamal_November_2025.pdf)
+        $studentName = str_replace(' ', '_', $selectedStudent->name);
+        $monthName = Carbon::createFromDate($year, $month)->format('F');
+        $fileName = 'Report_' . $studentName . '_' . $monthName . '_' . $year . '.pdf';
+
+        return $pdf->download($fileName);
     }
 }

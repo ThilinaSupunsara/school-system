@@ -11,14 +11,28 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
                     <form method="GET" action="{{ route('attendance.reports.attendance.class') }}">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Grade</label>
+                                <select name="grade_id" id="grade_filter" onchange="filterSections()" class="w-full rounded-md shadow-sm border-gray-300 text-sm">
+                                    <option value="">All Grades</option>
+                                    @foreach ($grades as $grade)
+                                        <option value="{{ $grade->id }}" {{ request('grade_id') == $grade->id ? 'selected' : '' }}>
+                                            {{ $grade->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
                             <div class="md:col-span-2">
-                                <label for="section_id" class="block font-medium text-sm text-gray-700">{{ __('Select Class (Section)') }}</label>
-                                <select name="section_id" id="section_id" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" required>
-                                    <option value="">-- Choose a Class --</option>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Class (Section)</label>
+                                <select name="section_id" id="section_filter" class="w-full rounded-md shadow-sm border-gray-300 text-sm" required>
+                                    <option value="">-- Select Class --</option>
                                     @foreach ($sections as $section)
-                                        <option value="{{ $section->id }}" {{ request('section_id') == $section->id ? 'selected' : '' }}>
+                                        <option value="{{ $section->id }}"
+                                                data-grade-id="{{ $section->grade_id }}"
+                                                {{ request('section_id') == $section->id ? 'selected' : '' }}>
                                             {{ $section->grade->name }} - {{ $section->name }}
                                         </option>
                                     @endforeach
@@ -26,8 +40,8 @@
                             </div>
 
                             <div>
-                                <label for="month" class="block font-medium text-sm text-gray-700">{{ __('Month') }}</label>
-                                <select name="month" id="month" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" required>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Month</label>
+                                <select name="month" class="w-full rounded-md shadow-sm border-gray-300 text-sm" required>
                                     @for ($m = 1; $m <= 12; $m++)
                                         <option value="{{ $m }}" {{ request('month', now()->month) == $m ? 'selected' : '' }}>
                                             {{ \Carbon\Carbon::create()->month($m)->format('F') }}
@@ -35,22 +49,56 @@
                                     @endfor
                                 </select>
                             </div>
-
-                            <div class="flex items-end gap-4">
-                                <div class="w-full">
-                                    <label for="year" class="block font-medium text-sm text-gray-700">{{ __('Year') }}</label>
-                                    <input id="year" class="block mt-1 w-full rounded-md shadow-sm border-gray-300"
-                                           type="number" name="year" value="{{ request('year', now()->year) }}" required />
-                                </div>
-                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-900 h-10">
-                                    {{ __('View') }}
-                                </button>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Year</label>
+                                <input type="number" name="year" value="{{ request('year', now()->year) }}" class="w-full rounded-md shadow-sm border-gray-300 text-sm" required>
                             </div>
 
+                        </div>
+
+                        <div class="mt-4 flex justify-end gap-2">
+                            <button type="submit" class="px-4 py-2 bg-blue-800 text-white rounded-md text-sm font-bold hover:bg-blue-900">
+                                View
+                            </button>
+
+                            @if(request()->filled('section_id'))
+                                <a href="{{ route('finance.reports.attendance.class.pdf', request()->all()) }}" target="_blank" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-bold hover:bg-red-700 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    PDF
+                                </a>
+                            @endif
                         </div>
                     </form>
                 </div>
             </div>
+
+            <script>
+                function filterSections() {
+                    var selectedGradeId = document.getElementById('grade_filter').value;
+                    var sectionSelect = document.getElementById('section_filter');
+                    var options = sectionSelect.options;
+
+                    if (selectedGradeId !== "") {
+                        // Optional: sectionSelect.value = "";
+                    }
+
+                    for (var i = 0; i < options.length; i++) {
+                        var option = options[i];
+                        var sectionGradeId = option.getAttribute('data-grade-id');
+
+                        if (option.value === "") continue;
+
+                        if (selectedGradeId === "" || sectionGradeId == selectedGradeId) {
+                            option.style.display = "block";
+                        } else {
+                            option.style.display = "none";
+                        }
+                    }
+                }
+                document.addEventListener("DOMContentLoaded", function() {
+                    filterSections();
+                });
+            </script>
 
             @if($selectedSection && $students->count() > 0)
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">

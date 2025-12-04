@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payroll;
+use App\Models\SchoolSetting;
 use App\Models\Staff;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -86,38 +88,46 @@ class PayrollController extends Controller
 
     public function index(Request $request)
     {
-        // Eager load staff and their user details
-        // 'latest()' දාලා අලුත්ම payroll records උඩින්ම පෙන්නමු
-        $payrolls = Payroll::with('staff.user')
-                            ->latest()
-                            ->paginate(20);
+        // 1. Query එක පටන් ගන්නවා
+        $query = Payroll::with('staff.user');
 
+        // --- Filter Logic ---
+
+        // Month Filter
+        if ($request->filled('month')) {
+            $query->where('month', $request->month);
+        }
+
+        // Year Filter
+        if ($request->filled('year')) {
+            $query->where('year', $request->year);
+        }
+
+        // Status Filter (Generated / Paid)
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search Staff (Name)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            // Payroll -> Staff -> User හරහා නම check කරනවා
+            $query->whereHas('staff.user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        // 2. Data ගන්නවා (Pagination 10 + Filters රැකගැනීම)
+        $payrolls = $query->latest()
+                          ->paginate(10)
+                          ->appends($request->all());
+
+        // View එකට යවනවා (සෙවුම් ප්‍රතිඵල පෙන්වන්න request එකත් යවන්න පුළුවන්,
+        // නමුත් paginate()->appends() මගින් එය handle වෙනවා)
         return view('admin.payroll.index', compact('payrolls'));
     }
 
-    /**
-     * Display the payslip for a specific payroll record.
-     */
-    public function showPayslip(Payroll $payroll)
-    {
-        // Eager load the relationships
-        $payroll->load('staff.user');
-
-        return view('admin.payroll.payslip', compact('payroll'));
-    }
-    public function toggleStatus(Payroll $payroll)
-    {
-        // Status එක toggle (මාරු) කරනවා
-        $newStatus = $payroll->status === 'generated' ? 'paid' : 'generated';
-
-        $payroll->update([
-            'status' => $newStatus,
-        ]);
-
-        // ආපහු list එකටම redirect කරනවා
-        return redirect()->route('finance.payroll.index')
-                         ->with('success', 'Payroll status updated to ' . $newStatus . '.');
-    }
+   
 
     /**
      * Remove the specified resource from storage.
@@ -129,5 +139,102 @@ class PayrollController extends Controller
 
         return redirect()->route('finance.payroll.index')
                          ->with('success', 'Payroll record deleted successfully.');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        // 1. Query එක පටන් ගන්නවා (index method එකේ logic එකමයි)
+        $query = Payroll::with('staff.user');
+
+        // --- Filter Logic ---
+        if ($request->filled('month')) {
+            $query->where('month', $request->month);
+        }
+        if ($request->filled('year')) {
+            $query->where('year', $request->year);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('staff.user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        // 2. Data ගන්නවා (ඔක්කොම records)
+        $payrolls = $query->latest()->get();
+
+        // 3. Totals ගණනය කිරීම (Summary සඳහා)
+        $totalNetSalary = $payrolls->sum('net_salary');
+        $totalBasic = $payrolls->sum('basic_salary');
+
+        // 4. PDF Load කිරීම
+        $schoolSettings = \App\Models\SchoolSetting::first();
+
+        $pdf = Pdf::loadView('admin.payroll.pdf_list', compact(
+            'payrolls', 'totalNetSalary', 'totalBasic', 'schoolSettings'
+        ));
+
+        // 5. Download
+        return $pdf->download('Payroll-Report-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function show(Payroll $payroll)
+    {
+        $payroll->load('staff.user', 'payments');
+        $balance = $payroll->net_salary - $payroll->paid_amount;
+
+        return view('admin.payroll.show', compact('payroll', 'balance'));
+    }
+    public function storePayment(Request $request, Payroll $payroll)
+    {
+        $balance = $payroll->net_salary - $payroll->paid_amount;
+
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01|max:' . $balance,
+            'payment_date' => 'required|date',
+            'method' => 'required|string',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // 1. Create Payment Record
+            $payroll->payments()->create([
+                'amount' => $request->amount,
+                'payment_date' => $request->payment_date,
+                'method' => $request->method,
+            ]);
+
+            // 2. Update Payroll Status & Paid Amount
+            $newPaidAmount = $payroll->paid_amount + $request->amount;
+
+            $status = 'generated'; // default (pending)
+            if ($newPaidAmount >= $payroll->net_salary) {
+                $status = 'paid';
+            } elseif ($newPaidAmount > 0) {
+                $status = 'partial';
+            }
+
+            $payroll->update([
+                'paid_amount' => $newPaidAmount,
+                'status' => $status,
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'Payment recorded successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    public function printPayslip(Payroll $payroll)
+    {
+        $payroll->load('staff.user', 'payments');
+        $schoolSettings =SchoolSetting::first();
+
+        return view('admin.payroll.print_payslip', compact('payroll', 'schoolSettings'));
     }
 }

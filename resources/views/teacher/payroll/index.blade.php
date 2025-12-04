@@ -27,11 +27,19 @@
                                             {{ \Carbon\Carbon::create()->month($payroll->month)->format('F') }} / {{ $payroll->year }}
                                         </td>
                                         <td class="px-6 py-4 ...">LKR {{ number_format($payroll->net_salary, 2) }}</td>
-                                        <td class="px-6 py-4 ...">
+                                        <td class="px-6 py-4 whitespace-nowrap">
                                             @if($payroll->status == 'paid')
-                                                <span class_alias="px-2 ... bg-green-100 text-green-800">Paid</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                    Paid
+                                                </span>
+                                            @elseif($payroll->status == 'partial')
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                    Partial
+                                                </span>
                                             @else
-                                                <span class_alias="px-2 ... bg-blue-100 text-blue-800">Generated</span>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                    Generated
+                                                </span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 text-right ...">

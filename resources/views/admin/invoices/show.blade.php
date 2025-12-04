@@ -1,6 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <a href="{{ route('finance.invoices.index') }}"
+            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md
+                    font-semibold text-xs text-gray-700 uppercase tracking-widest
+                    hover:text-gray-900 focus:outline-none focus:ring-2
+                    focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+
+            </a>
+
             {{ __('Invoice Details') }}: #{{ $invoice->id }}
         </h2>
     </x-slot>
@@ -33,7 +47,8 @@
                 <div class="md:col-span-2">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900">
-                            <div class="border-b pb-6 mb-6 flex justify-between items-center">
+
+                            <div class="flex justify-between items-start mb-6 border-b">
                                 <div class="flex items-center gap-4">
                                     @if(isset($schoolSettings) && $schoolSettings->logo_path)
                                         <img src="{{ asset('storage/' . $schoolSettings->logo_path) }}" alt="Logo" class="h-16 w-auto object-contain">
@@ -50,6 +65,14 @@
                                             {{ $schoolSettings->phone ?? '' }}
                                         </p>
                                     </div>
+                                </div>
+                                <div class="text-right">
+                                    <a href="{{ route('finance.invoices.print', $invoice->id) }}" target="_blank" class="inline-flex items-center px-3 py-1 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 mt-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        Print
+                                    </a>
                                 </div>
                             </div>
                             <div class="flex justify-between items-start mb-6">
@@ -97,6 +120,7 @@
                                 </tfoot>
                             </table>
 
+
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Payment History</h3>
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
@@ -127,50 +151,73 @@
                 <div class="md:col-span-1">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Record Payment</h3>
 
-                            @if($balance > 0)
-                            <form method="POST" action="{{ route('finance.invoices.storePayment', $invoice->id) }}">
-                                @csrf
-
-                                <div class="mb-4">
-                                    <label for="amount" class="block font-medium text-sm text-gray-700">{{ __('Amount (LKR)') }}</label>
-                                    <input id="amount" class="block mt-1 w-full rounded-md shadow-sm border-gray-300"
-                                           type="number" step="0.01" min="0.01" max="{{ $balance }}"
-                                           name="amount"
-                                           value="{{ old('amount', $balance) }}"
-                                           required />
+                            @if($invoice->total_amount == 0 && $invoice->status != 'paid')
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Full Scholarship</h3>
+                                <div class="p-4 bg-blue-50 border border-blue-200 text-blue-700 rounded mb-4">
+                                    <p class="text-sm">This student has a 100% scholarship. No payment is required.</p>
                                 </div>
 
-                                <div class="mb-4">
-                                    <label for="payment_date" class="block font-medium text-sm text-gray-700">{{ __('Payment Date') }}</label>
-                                    <input id="payment_date" class="block mt-1 w-full rounded-md shadow-sm border-gray-300"
-                                           type="date"
-                                           name="payment_date"
-                                           value="{{ old('payment_date', now()->format('Y-m-d')) }}"
-                                           required />
-                                </div>
-
-                                <div class="mb-4">
-                                    <label for="method" class="block font-medium text-sm text-gray-700">{{ __('Payment Method') }}</label>
-                                    <select name="method" id="method" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" required>
-                                        <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>Cash</option>
-                                        <option value="bank_transfer" {{ old('method') == 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                                    </select>
-                                </div>
-
-                                <div class="flex items-center justify-end mt-4">
-                                    <button type="submit" class="w-full justify-center inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 ...">
-                                        {{ __('Record Payment') }}
+                                <form method="POST" action="{{ route('finance.invoices.settle', $invoice->id) }}">
+                                    @csrf
+                                    <button type="submit" class="w-full justify-center inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                        {{ __('Mark as Settled') }}
                                     </button>
-                                </div>
-                            </form>
+                                </form>
+
+                            @elseif($balance > 0)
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Record Payment</h3>
+
+                                <form method="POST" action="{{ route('finance.invoices.storePayment', $invoice->id) }}">
+                                    @csrf
+
+                                    <div class="mb-4">
+                                        <label for="amount" class="block font-medium text-sm text-gray-700">{{ __('Amount (LKR)') }}</label>
+                                        <input id="amount" class="block mt-1 w-full rounded-md shadow-sm border-gray-300"
+                                            type="number" step="0.01" min="0.01" max="{{ $balance }}"
+                                            name="amount"
+                                            value="{{ old('amount', $balance) }}"
+                                            required />
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="payment_date" class="block font-medium text-sm text-gray-700">{{ __('Payment Date') }}</label>
+                                        <input id="payment_date" class="block mt-1 w-full rounded-md shadow-sm border-gray-300"
+                                            type="date"
+                                            name="payment_date"
+                                            value="{{ old('payment_date', now()->format('Y-m-d')) }}"
+                                            required />
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="method" class="block font-medium text-sm text-gray-700">{{ __('Payment Method') }}</label>
+                                        <select name="method" id="method" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" required>
+                                            <option value="cash">Cash</option>
+                                            <option value="bank_transfer">Bank Transfer</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="flex items-center justify-end mt-4">
+                                        <button type="submit" class="w-full justify-center inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 ...">
+                                            {{ __('Record Payment') }}
+                                        </button>
+                                    </div>
+                                </form>
+
                             @else
-                            <div class="p-4 bg-green-100 border border-green-400 text-green-700 rounded text-center">
-                                <p class="font-bold text-lg">Fully Paid</p>
-                                <p>This invoice has been fully paid.</p>
-                            </div>
+                                <div class="p-4 bg-green-100 border border-green-400 text-green-700 rounded text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <p class="font-bold text-lg">Fully Paid</p>
+                                    @if($invoice->total_amount == 0)
+                                        <p class="text-sm mt-1">(Full Scholarship)</p>
+                                    @else
+                                        <p class="text-sm mt-1">No balance due.</p>
+                                    @endif
+                                </div>
                             @endif
+
                         </div>
                     </div>
                 </div>

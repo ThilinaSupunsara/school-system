@@ -24,4 +24,8 @@ class Student extends Model
     {
         return $this->hasMany(Attendance::class);
     }
+    public function scholarships()
+    {
+        return $this->belongsToMany(Scholarship::class, 'student_scholarship');
+    }
 }

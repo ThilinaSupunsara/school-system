@@ -16,7 +16,7 @@
 
                             <div>
                                 <label for="grade_id" class="block font-medium text-sm text-gray-700">{{ __('Filter by Grade') }}</label>
-                                <select name="grade_id" id="grade_id" class="block mt-1 w-full rounded-md shadow-sm border-gray-300">
+                                <select name="grade_id" id="grade_filter" onchange="filterSections()" class="block mt-1 w-full rounded-md shadow-sm border-gray-300">
                                     <option value="">{{ __('All Grades') }}</option>
                                     @foreach ($grades as $grade)
                                         <option value="{{ $grade->id }}" {{ request('grade_id') == $grade->id ? 'selected' : '' }}>
@@ -28,10 +28,12 @@
 
                             <div>
                                 <label for="section_id" class="block font-medium text-sm text-gray-700">{{ __('Filter by Section') }}</label>
-                                <select name="section_id" id="section_id" class="block mt-1 w-full rounded-md shadow-sm border-gray-300">
+                                <select name="section_id" id="section_filter" class="block mt-1 w-full rounded-md shadow-sm border-gray-300">
                                     <option value="">{{ __('All Sections') }}</option>
                                     @foreach ($sections as $section)
-                                        <option value="{{ $section->id }}" {{ request('section_id') == $section->id ? 'selected' : '' }}>
+                                        <option value="{{ $section->id }}"
+                                                data-grade-id="{{ $section->grade_id }}"
+                                                {{ request('section_id') == $section->id ? 'selected' : '' }}>
                                             {{ $section->grade->name }} - {{ $section->name }}
                                         </option>
                                     @endforeach
@@ -39,11 +41,17 @@
                             </div>
 
                             <div class="flex items-end space-x-4">
-                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 text-white h-10">
                                     {{ __('Generate') }}
                                 </button>
-                                <a href="{{ route('finance.reports.outstanding') }}" class="text-sm text-gray-600 hover:text-gray-900">
+                                <a href="{{ route('finance.reports.outstanding') }}" class="text-sm text-gray-600 hover:text-gray-900 self-center">
                                     {{ __('Clear Filters') }}
+                                </a>
+                                <a href="{{ route('finance.reports.outstanding.pdf', request()->all()) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 h-10 ml-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Download PDF
                                 </a>
                             </div>
 
@@ -114,4 +122,42 @@
 
         </div>
     </div>
+
+    <script>
+        function filterSections() {
+            var selectedGradeId = document.getElementById('grade_filter').value;
+            var sectionSelect = document.getElementById('section_filter');
+            var options = sectionSelect.options;
+
+            // Reset selection only if user manually changes grade
+            if (selectedGradeId !== "") {
+                 // sectionSelect.value = ""; // Optional: Keep this if you want to clear section on grade change
+            }
+
+            for (var i = 0; i < options.length; i++) {
+                var option = options[i];
+                var sectionGradeId = option.getAttribute('data-grade-id');
+
+                if (option.value === "") {
+                    continue; // Keep "All Sections" visible
+                }
+
+                if (selectedGradeId === "" || sectionGradeId == selectedGradeId) {
+                    option.style.display = "block";
+                } else {
+                    option.style.display = "none";
+                }
+            }
+        }
+
+        // Page load එකේදී run වෙන්න (පරණ filter එක රැකගන්න)
+        document.addEventListener("DOMContentLoaded", function() {
+            filterSections();
+            var oldSection = "{{ request('section_id') }}";
+            if(oldSection) {
+                document.getElementById('section_filter').value = oldSection;
+            }
+        });
+    </script>
+
 </x-app-layout>

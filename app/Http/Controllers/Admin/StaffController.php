@@ -15,11 +15,39 @@ class StaffController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $staffMembers = Staff::with('user')->get();
+        // 1. Dropdown eka sadaha Roles gannawa ('admin' ara)
+        $roles = UserRole::where('name', '!=', 'admin')->get();
 
-        return view('admin.staff.index', compact('staffMembers'));
+        // 2. Query eka patan gannawa (User details ekka)
+        $query = Staff::with('user');
+
+        // --- Filter Logic ---
+
+        // Role Filter (User table eke check karanna ona)
+        if ($request->filled('role')) {
+            $role = $request->role;
+            $query->whereHas('user', function ($q) use ($role) {
+                $q->where('role', $role);
+            });
+        }
+
+        // Search (Name ho Email)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // 3. Data gannawa (Pagination ekka)
+        $staffMembers = $query->latest()
+                              ->paginate(10)
+                              ->appends($request->all());
+
+        return view('admin.staff.index', compact('staffMembers', 'roles'));
     }
 
     /**

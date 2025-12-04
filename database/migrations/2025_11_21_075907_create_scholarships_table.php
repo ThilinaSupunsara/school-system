@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('scholarships', function (Blueprint $table) {
+            $table->id();
+            $table->string('name'); // e.g. "Sports Scholarship"
+            $table->decimal('amount', 10, 2); // e.g. 1000.00 (අඩු වන මුදල)
+            $table->timestamps();
+        });
+
+        Schema::create('student_scholarship', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('student_id')->constrained()->onDelete('cascade');
+        $table->foreignId('scholarship_id')->constrained()->onDelete('cascade');
+        $table->timestamps();
+    });
+    }
+
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('scholarships');
+    }
+};

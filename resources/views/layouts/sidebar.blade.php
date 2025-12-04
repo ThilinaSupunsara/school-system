@@ -1,12 +1,29 @@
-<div class="flex flex-col h-screen px-4 py-8 bg-white border-r overflow-y-auto w-64">
-    <div class="flex items-center justify-center mb-6">
-        <a href="{{ route('dashboard') }}">
-            <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-        </a>
+<div class="flex flex-col h-screen w-64 bg-white border-r hidden md:flex">
+
+    <div class="flex-shrink-0 flex flex-col items-center justify-center py-6  border-b border-gray-200 shadow-sm z-10">
+
+        @if(isset($schoolSettings) && $schoolSettings->logo_path)
+            <div class="h-16 w-16 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center overflow-hidden p-1">
+                <img src="{{ asset('storage/' . $schoolSettings->logo_path) }}"
+                     alt="Logo"
+                     class="h-full w-full object-contain rounded-full">
+            </div>
+
+            <div class="mt-2 text-center px-2">
+                <h1 class="text-xs font-bold text-gray-800 uppercase tracking-wide">
+                    {{ $schoolSettings->school_name ?? 'SCHOOL NAME' }}
+                </h1>
+            </div>
+        @else
+            <span class="text-lg font-bold text-gray-800">
+                {{ $schoolSettings->school_name ?? 'SCHOOL NAME' }}
+            </span>
+        @endif
+
     </div>
 
-    <div class="flex flex-col justify-between flex-1 mt-6">
-        <nav class="space-y-2">
+    <div class="flex-1 overflow-y-auto py-6">
+        <nav class="space-y-2 px-4">
 
             <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-200 {{ request()->routeIs('dashboard') ? 'bg-gray-200 font-bold' : '' }}">
                 <span class="mx-4 font-medium">Dashboard</span>
@@ -34,6 +51,9 @@
                 </a>
                 <a href="{{ route('admin.settings.edit') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('admin.settings.*') ? 'bg-gray-200' : '' }}">
                     <span class="mx-4">Settings</span>
+                </a>
+                <a href="{{ route('admin.scholarships.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200">
+                    <span class="mx-4">Scholarships</span>
                 </a>
             @endif
 
@@ -82,6 +102,8 @@
                     <span class="mx-4">My Payslips</span>
                 </a>
             @endif
+
+            <div class="h-10"></div>
 
         </nav>
     </div>
