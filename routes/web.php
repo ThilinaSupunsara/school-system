@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Accountant\DashboardController as AccountantDashboardController;
 use App\Http\Controllers\Admin\AllowanceController;
 use App\Http\Controllers\Admin\DeductionController;
+use App\Http\Controllers\Admin\ExpenseCategoryController;
+use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FeeCategoryController;
 use App\Http\Controllers\Admin\FeeStructureController;
 use App\Http\Controllers\Admin\GradeController;
@@ -177,6 +179,15 @@ Route::get('/dashboard', function () {
 
 
             Route::post('invoices/{invoice}/mark-settled', [InvoiceController::class, 'markAsSettled'])->name('invoices.settle');
+            // Print Route (Resource එකට උඩින් දාන්න)
+            Route::get('expenses/print-report', [ExpenseController::class, 'printReport'])->name('expenses.print');
+            // Other Expenses Routes
+            Route::resource('expenses', ExpenseController::class);
+            // View Receipt Page Route
+            Route::get('expenses/{expense}/view-receipt', [ExpenseController::class, 'showReceipt'])
+            ->name('expenses.view_receipt');
+            // Category Management Route
+            Route::resource('expense-categories', ExpenseCategoryController::class);
     });
 
     Route::middleware(['auth', 'role:admin,teacher'])

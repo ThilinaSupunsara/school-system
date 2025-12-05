@@ -66,6 +66,13 @@
                 <a href="{{ route('finance.payroll.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('finance.payroll.*') ? 'bg-gray-200' : '' }}">
                     <span class="mx-4">Payroll</span>
                 </a>
+                
+                <a href="{{ route('finance.expense-categories.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 ...">
+                    <span>Expense Categories</span>
+                </a>
+                <a href="{{ route('finance.expenses.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 ...">
+                    <span>Other Expenses</span>
+                </a>
 
                 <a href="{{ route('finance.fee-structures.index') }}" class="flex items-center px-4 py-1 text-sm text-gray-500 hover:text-gray-900 ml-4">
                     • Fee Structure
