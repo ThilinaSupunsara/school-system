@@ -25,7 +25,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.students.store') }}">
+                    <form method="POST" action="{{ route('finance.students.store') }}">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

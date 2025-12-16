@@ -85,6 +85,7 @@ class StaffController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
+        $user->assignRole($request->role);
 
         // 3. Staff member ව හදමු (අලුත් user ID එක දාලා)
         $user->staff()->create([

@@ -25,7 +25,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.sections.store') }}">
+                    <form method="POST" action="{{ route('finance.sections.store') }}">
                         @csrf
 
                         <div class="mb-4">

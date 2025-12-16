@@ -64,9 +64,7 @@ Route::get('/dashboard', function () {
         ->name('admin.')
         ->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-            Route::resource('grades', GradeController::class);
-            Route::resource('sections', SectionController::class);
-            Route::resource('students', StudentController::class);
+
             Route::resource('staff', StaffController::class);
 
             Route::get('staff/{staff}/payroll', [StaffPayrollController::class, 'edit'])->name('staff.payroll.edit');
@@ -76,14 +74,7 @@ Route::get('/dashboard', function () {
             // Routes for Staff Deductions
             Route::post('staff/{staff}/deductions', [DeductionController::class, 'store'])->name('staff.deductions.store');
             Route::delete('deductions/{deduction}', [DeductionController::class, 'destroy'])->name('deductions.destroy');
-            // 1. Assign Teacher Form එක පෙන්වන route (GET)
-            Route::get('sections/{section}/assign-teacher', [SectionController::class, 'showAssignTeacherForm'])->name('sections.assign_teacher.form');
 
-            // 2. Teacher ව assign කරලා save කරන route (POST)
-            Route::post('sections/{section}/assign-teacher', [SectionController::class, 'storeAssignTeacher'])->name('sections.assign_teacher.store');
-
-            // 3. Teacher ව අයින් කරන (Remove) route (DELETE)
-            Route::delete('sections/{section}/remove-teacher', [SectionController::class, 'removeAssignTeacher'])->name('sections.assign_teacher.remove');
 
             Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
             Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
@@ -101,6 +92,12 @@ Route::get('/dashboard', function () {
             Route::get('students/{student}/scholarships', [ScholarshipController::class, 'assignForm'])->name('students.scholarships.assign');
             Route::post('students/{student}/scholarships', [ScholarshipController::class, 'assignStore'])->name('students.scholarships.store');
             Route::delete('students/{student}/scholarships/{scholarship}', [ScholarshipController::class, 'assignDestroy'])->name('students.scholarships.destroy');
+
+            Route::get('permissions-matrix', [\App\Http\Controllers\Admin\RolePermissionController::class, 'index'])
+                ->name('permissions.matrix');
+
+            Route::post('permissions-matrix', [\App\Http\Controllers\Admin\RolePermissionController::class, 'update'])
+                ->name('permissions.update');
         });
 
         // Accountant Dashboard
@@ -136,7 +133,7 @@ Route::get('/dashboard', function () {
         });
 
         // ===== FINANCE GROUP (Admin & Accountant) =====
-        Route::middleware(['auth', 'role:admin,accountant'])
+        Route::middleware(['auth', 'role:admin|accountant'])
             ->prefix('finance')
             ->name('finance.')
             ->group(function () {
@@ -188,9 +185,23 @@ Route::get('/dashboard', function () {
             ->name('expenses.view_receipt');
             // Category Management Route
             Route::resource('expense-categories', ExpenseCategoryController::class);
+
+            Route::resource('grades', GradeController::class);
+            Route::resource('sections', SectionController::class);
+            Route::resource('students', StudentController::class);
+
+            // 1. Assign Teacher Form එක පෙන්වන route (GET)
+            Route::get('sections/{section}/assign-teacher', [SectionController::class, 'showAssignTeacherForm'])->name('sections.assign_teacher.form');
+
+            // 2. Teacher ව assign කරලා save කරන route (POST)
+            Route::post('sections/{section}/assign-teacher', [SectionController::class, 'storeAssignTeacher'])->name('sections.assign_teacher.store');
+
+            // 3. Teacher ව අයින් කරන (Remove) route (DELETE)
+            Route::delete('sections/{section}/remove-teacher', [SectionController::class, 'removeAssignTeacher'])->name('sections.assign_teacher.remove');
     });
 
-    Route::middleware(['auth', 'role:admin,teacher'])
+
+    Route::middleware(['auth', 'role:admin|teacher'])
             ->prefix('attendance')
             ->name('attendance.')
             ->group(function () {

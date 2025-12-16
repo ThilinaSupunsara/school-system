@@ -30,17 +30,7 @@
             </a>
 
             @if(Auth::user()->role === 'admin')
-                <p class="px-4 pt-4 text-xs font-bold text-gray-400 uppercase">Academic</p>
 
-                <a href="{{ route('admin.grades.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('admin.grades.*') ? 'bg-gray-200' : '' }}">
-                    <span class="mx-4">Grades</span>
-                </a>
-                <a href="{{ route('admin.sections.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('admin.sections.*') ? 'bg-gray-200' : '' }}">
-                    <span class="mx-4">Classes</span>
-                </a>
-                <a href="{{ route('admin.students.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('admin.students.*') ? 'bg-gray-200' : '' }}">
-                    <span class="mx-4">Students</span>
-                </a>
 
                 <p class="px-4 pt-4 text-xs font-bold text-gray-400 uppercase">HR & Settings</p>
                 <a href="{{ route('admin.roles.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('admin.roles.*') ? 'bg-gray-200' : '' }}">
@@ -55,9 +45,24 @@
                 <a href="{{ route('admin.scholarships.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200">
                     <span class="mx-4">Scholarships</span>
                 </a>
+                <a href="{{ route('admin.permissions.matrix') }}" class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-200 rounded-md">
+
+                    <span class="mx-4">Role Permissions</span>
+                </a>
             @endif
 
             @if(in_array(Auth::user()->role, ['admin', 'accountant']))
+                <p class="px-4 pt-4 text-xs font-bold text-gray-400 uppercase">Academic</p>
+
+                <a href="{{ route('finance.grades.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('admin.grades.*') ? 'bg-gray-200' : '' }}">
+                    <span class="mx-4">Grades</span>
+                </a>
+                <a href="{{ route('finance.sections.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('admin.sections.*') ? 'bg-gray-200' : '' }}">
+                    <span class="mx-4">Classes</span>
+                </a>
+                <a href="{{ route('finance.students.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('admin.students.*') ? 'bg-gray-200' : '' }}">
+                    <span class="mx-4">Students</span>
+                </a>
                 <p class="px-4 pt-4 text-xs font-bold text-gray-400 uppercase">Finance</p>
 
                 <a href="{{ route('finance.invoices.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('finance.invoices.*') ? 'bg-gray-200' : '' }}">
@@ -66,7 +71,7 @@
                 <a href="{{ route('finance.payroll.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200 {{ request()->routeIs('finance.payroll.*') ? 'bg-gray-200' : '' }}">
                     <span class="mx-4">Payroll</span>
                 </a>
-                
+
                 <a href="{{ route('finance.expense-categories.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 ...">
                     <span>Expense Categories</span>
                 </a>

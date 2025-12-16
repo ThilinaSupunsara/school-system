@@ -25,7 +25,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.grades.update', $grade->id) }}">
+                    <form method="POST" action="{{ route('finance.grades.update', $grade->id) }}">
                         @csrf
                         @method('PUT') <div>
                             <label for="name" class="block font-medium text-sm text-gray-700">{{ __('Grade Name') }}</label>

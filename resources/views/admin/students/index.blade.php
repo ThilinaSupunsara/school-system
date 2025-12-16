@@ -11,12 +11,12 @@
                 <div class="p-6 text-gray-900">
 
                     <div class="flex justify-between items-center mb-6">
-                        <a href="{{ route('admin.students.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                        <a href="{{ route('finance.students.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             {{ __('Register New Student') }}
                         </a>
                     </div>
 
-                    <form method="GET" action="{{ route('admin.students.index') }}" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <form method="GET" action="{{ route('finance.students.index') }}" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
                             <div>
@@ -54,7 +54,7 @@
                                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 font-bold w-full">
                                     Filter
                                 </button>
-                                <a href="{{ route('admin.students.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400 font-bold w-full text-center">
+                                <a href="{{ route('finance.students.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400 font-bold w-full text-center">
                                     Reset
                                 </a>
                             </div>
@@ -129,13 +129,13 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $student->parent_phone }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('admin.students.edit', $student->id) }}" class="text-indigo-600 hover:text-indigo-900">View/Edit</a>
+                                            <a href="{{ route('finance.students.edit', $student->id) }}" class="text-indigo-600 hover:text-indigo-900">View/Edit</a>
 
 
                                             </td>
-                                            
+
                                         <td>
-                                            <form class="inline" method="POST" action="{{ route('admin.students.destroy', $student->id) }}"
+                                            <form class="inline" method="POST" action="{{ route('finance.students.destroy', $student->id) }}"
                                             onsubmit="return confirm('Are you sure you want to delete this student?');">
 
                                             @csrf

@@ -10,7 +10,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    <a href="{{ route('admin.grades.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150 mb-4">
+                    <a href="{{ route('finance.grades.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150 mb-4">
                         {{ __('Add New Grade') }}
                     </a>
                     @if (session('success'))
@@ -49,11 +49,11 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 
-                                    <a href="{{ route('admin.grades.edit', $grade->id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                    <a href="{{ route('finance.grades.edit', $grade->id) }}" class="text-indigo-600 hover:text-indigo-900">
                                         Edit
                                     </a>
 
-                                    <form class="inline" method="POST" action="{{ route('admin.grades.destroy', $grade->id) }}"
+                                    <form class="inline" method="POST" action="{{ route('finance.grades.destroy', $grade->id) }}"
                                         onsubmit="return confirm('Are you sure you want to delete this grade? This will also delete all sections inside it.');">
 
                                         @csrf

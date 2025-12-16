@@ -25,7 +25,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.students.update', $student->id) }}">
+                    <form method="POST" action="{{ route('finance.students.update', $student->id) }}">
                         @csrf
                         @method('PUT')
 
@@ -81,7 +81,7 @@
                         </div>
 
                         <div class="flex items-center justify-between mt-6">
-                            <a href="{{ route('admin.students.scholarships.assign', $student->id) }}"
+                            <a href="{{ route('finance.students.scholarships.assign', $student->id) }}"
                             class="text-green-600 hover:text-green-900">
                                 Scholarships
                             </a>

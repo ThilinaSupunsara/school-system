@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            <a href="{{ route('admin.sections.index') }}"
+            <a href="{{ route('finance.sections.index') }}"
             class="inline-flex items-center px-4 py-2 border border-transparent rounded-md
                     font-semibold text-xs text-gray-700 uppercase tracking-widest
                     hover:text-gray-900 focus:outline-none focus:ring-2
@@ -36,7 +36,7 @@
                             <p class="mt-1 text-xl font-semibold text-blue-600">
                                 {{ $section->classTeacher->user->name }}
                             </p>
-                            <form method="POST" action="{{ route('admin.sections.assign_teacher.remove', $section->id) }}" onsubmit="return confirm('Are you sure you want to remove this teacher?');" class="mt-2">
+                            <form method="POST" action="{{ route('finance.sections.assign_teacher.remove', $section->id) }}" onsubmit="return confirm('Are you sure you want to remove this teacher?');" class="mt-2">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-sm text-red-600 hover:text-red-900">
@@ -50,7 +50,7 @@
 
                     <hr class="my-6">
 
-                    <form method="POST" action="{{ route('admin.sections.assign_teacher.store', $section->id) }}">
+                    <form method="POST" action="{{ route('finance.sections.assign_teacher.store', $section->id) }}">
                         @csrf
                         <h3 class="text-lg font-medium text-gray-900">Assign / Change Teacher</h3>
 

@@ -8,6 +8,6 @@ class UserRole extends Model
 {
    protected $fillable = [
         'name',
-  
+
     ];
 }

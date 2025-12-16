@@ -27,7 +27,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.grades.store') }}">
+                    <form method="POST" action="{{ route('finance.grades.store') }}">
                         @csrf
 
                         <div>
