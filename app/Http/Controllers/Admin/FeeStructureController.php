@@ -16,6 +16,9 @@ class FeeStructureController extends Controller
      */
     public function index()
     {
+        if (!auth()->user()->can('Structure.view')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // Eager load relationships
         $feeStructures = FeeStructure::with('grade', 'feeCategory')->get();
         return view('admin.fee_structures.index', compact('feeStructures'));
@@ -26,6 +29,9 @@ class FeeStructureController extends Controller
      */
     public function create()
     {
+        if (!auth()->user()->can('Structure.create')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // Dropdowns දෙකටම data යවන්න
         $grades = Grade::all();
         $feeCategories = FeeCategory::all();
@@ -69,6 +75,9 @@ class FeeStructureController extends Controller
      */
     public function edit(FeeStructure $feeStructure)
     {
+        if (!auth()->user()->can('Structure.edit')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // Dropdowns දෙකටම data සහ edit කරන structure එක යවන්න
         $grades = Grade::all();
         $feeCategories = FeeCategory::all();
@@ -104,6 +113,9 @@ class FeeStructureController extends Controller
      */
     public function destroy(FeeStructure $feeStructure)
     {
+        if (!auth()->user()->can('Structure.delete')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // Fee Structure එකක් delete කරාට ප්‍රශ්නයක් නෑ (cascade errors නෑ)
         $feeStructure->delete();
         return redirect()->route('finance.fee-structures.index')

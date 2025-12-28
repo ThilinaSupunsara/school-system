@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -14,54 +15,75 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Permission List එක (ඔබට අවශ්‍ය ඕනෑම එකක් මෙතනට දාන්න)
+        // 1. Cache Clear කිරීම (වැදගත්)
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // 2. සියලුම Permissions ලිස්ට් එක (All Features Included)
         $permissions = [
-            // Invoices
-            'invoice.view',
-            'invoice.create',
-            'invoice.edit',
-            'invoice.delete', // <-- Critical
-
-            // Payroll
-            'payroll.view',
-            'payroll.create',
-            'payroll.delete', // <-- Critical
-
-            // Students
+            // --- Students Management ---
             'student.view',
             'student.create',
             'student.edit',
-            'student.delete', // <-- Critical
+            'student.delete',
 
-            // Expenses
+            // --- Staff Management ---
+            'staff.view',
+            'staff.create',
+            'staff.edit',
+            'staff.delete',
+            'staff.Payroll',
+
+            // --- Finance: Invoices ---
+            'invoice.view',
+            'invoice.create',
+            'invoice.edit',
+            'invoice.delete',
+
+            // --- Finance: Payroll (Added Edit) ---
+            'payroll.view',
+            'payroll.create',
+            'payroll.edit',   // <-- New
+            'payroll.delete',
+
+            // --- Finance: Expenses (Added Edit) ---
             'expense.view',
             'expense.create',
-            'expense.delete', // <-- Critical
+            'expense.edit',   // <-- New
+            'expense.delete',
+
+            // --- Academic (AssignTeacher) ---
+            'AssignTeacher.view',
+
+
+            // --- Finance: Fee Setup (Scholarships) ---
+            'Scholarships.view',
+
+
+            // --- Reports ---
+            'report.financial',  // Salary sheets, Outstanding, etc.
+            'report.attendance', // Daily attendance, Registers
+
+            // --- Finance: Fee Setup (Structures) ---
+            'Structure.view',
+            'Structure.create',
+            'Structure.edit',
+            'Structure.delete',
+
         ];
 
-        // 2. Permissions Database එකට Save කිරීම
+        // 3. Permissions Database එකේ නිර්මාණය කිරීම
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // 3. Roles හදමු
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $accountantRole = Role::firstOrCreate(['name' => 'accountant']);
-        $teacherRole = Role::firstOrCreate(['name' => 'teacher']);
+        // 4. Roles නිර්මාණය කිරීම
+        $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
+        $roleAccountant = Role::firstOrCreate(['name' => 'accountant']);
+        $roleTeacher = Role::firstOrCreate(['name' => 'teacher']);
 
-        // 4. Admin ට ඔක්කොම බලතල දෙනවා
-        $adminRole->givePermissionTo(Permission::all());
+        // 5. Admin ට සියලුම බලතල දීම (Super Admin)
+        $roleAdmin->givePermissionTo(Permission::all());
 
-        // 5. Accountant ට "Delete" හැර අනිත්වා දෙනවා (Default Setup)
-        // උදාහරණයක් ලෙස: Accountant ට Invoice Delete කරන්න බෑ, ඒත් හදන්න පුළුවන්
-        $accountantRole->givePermissionTo([
-            'invoice.view', 'invoice.create', 'invoice.edit',
-            'payroll.view', 'payroll.create',
-            'student.view',
-            'expense.view', 'expense.create'
-        ]);
-
-        // (පසුව Admin Panel එකෙන් අපිට මේවා වෙනස් කරන්න පුළුවන්)
 
     }
 }

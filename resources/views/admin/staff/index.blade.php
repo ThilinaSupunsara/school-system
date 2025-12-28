@@ -9,14 +9,15 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-
                     <div class="flex justify-between items-center mb-6">
-                        <a href="{{ route('admin.staff.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                    @can('staff.create')
+                        <a href="{{ route('finance.staff.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             {{ __('Register New Staff Member') }}
                         </a>
+                         @endcan
                     </div>
 
-                    <form method="GET" action="{{ route('admin.staff.index') }}" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <form method="GET" action="{{ route('finance.staff.index') }}" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                             <div>
@@ -40,7 +41,7 @@
                                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 font-bold w-1/2">
                                     Filter
                                 </button>
-                                <a href="{{ route('admin.staff.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400 font-bold w-1/2 text-center">
+                                <a href="{{ route('finance.staff.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400 font-bold w-1/2 text-center">
                                     Reset
                                 </a>
                             </div>
@@ -76,14 +77,19 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $staff->designation }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('admin.staff.edit', $staff->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</a>
-                                            <a href="{{ route('admin.staff.payroll.edit', $staff->id) }}" class="text-green-600 hover:text-green-900 mr-2">Payroll</a>
-
-                                            <form class="inline" method="POST" action="{{ route('admin.staff.destroy', $staff->id) }}" onsubmit="return confirm('Are you sure?');">
+                                            @can('staff.edit')
+                                            <a href="{{ route('finance.staff.edit', $staff->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</a>
+                                             @endcan
+                                             @can('staff.Payroll')
+                                            <a href="{{ route('finance.staff.payroll.edit', $staff->id) }}" class="text-green-600 hover:text-green-900 mr-2">Payroll</a>
+                                             @endcan
+                                            @can('staff.delete')
+                                            <form class="inline" method="POST" action="{{ route('finance.staff.destroy', $staff->id) }}" onsubmit="return confirm('Are you sure?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
                                             </form>
+                                             @endcan
                                         </td>
                                     </tr>
                                 @empty

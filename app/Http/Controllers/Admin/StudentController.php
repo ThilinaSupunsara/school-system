@@ -16,6 +16,9 @@ class StudentController extends Controller
      */
     public function index(Request $request)
     {
+        if (!auth()->user()->can('student.view')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 1. Filters walata awashya Data gannawa
         $grades = Grade::all();
         $sections = Section::all();
@@ -61,6 +64,9 @@ class StudentController extends Controller
      */
     public function create()
     {
+        if (!auth()->user()->can('student.create')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $sections = Section::with('grade')->get();
 
         return view('admin.students.create', compact('sections'));
@@ -71,6 +77,9 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
+        if (!auth()->user()->can('student.create')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $request->validate([
             'admission_no' => 'required|string|max:100|unique:students',
             'name' => 'required|string|max:255',
@@ -106,6 +115,9 @@ class StudentController extends Controller
      */
     public function edit(Student $student)
     {
+        if (!auth()->user()->can('student.edit')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $sections = Section::with('grade')->get();
 
         return view('admin.students.edit', compact('student', 'sections'));
@@ -138,7 +150,7 @@ class StudentController extends Controller
         ]);
 
         // 3. Redirect Back
-        return redirect()->route('admin.students.index')
+        return redirect()->route('finance.students.index')
                          ->with('success', 'Student details updated successfully.');
     }
 
@@ -147,6 +159,9 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
+        if (!auth()->user()->can('student.delete')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 2. destroy method එක මෙහෙම වෙනස් කරන්න
         try {
 
@@ -154,14 +169,14 @@ class StudentController extends Controller
             $student->delete();
 
             // සාර්ථක වුණොත්
-            return redirect()->route('admin.students.index')
+            return redirect()->route('finance.students.index')
                              ->with('success', 'Student deleted successfully.');
 
         } catch (QueryException $e) {
 
             // Database Error එකක් ආවොත්
             // අනාගතයේදී fees records වගේ දේවල් නිසා වෙන්න පුළුවන්
-            return redirect()->route('admin.students.index')
+            return redirect()->route('finance.students.index')
                              ->with('error', 'Cannot delete this student. They may have related records (like fee payments).');
         }
     }

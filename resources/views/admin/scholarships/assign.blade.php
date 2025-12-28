@@ -22,14 +22,14 @@
                     <h3 class="text-xl font-bold">{{ $student->name }}</h3>
                     <p class="text-gray-600">Adm No: {{ $student->admission_no }} | Class: {{ $student->section->grade->name }} - {{ $student->section->name }}</p>
                 </div>
-                <a href="{{ route('admin.students.index') }}" class="text-gray-600 hover:text-gray-900 underline">Back to Students</a>
+                <a href="{{ route('finance.students.index') }}" class="text-gray-600 hover:text-gray-900 underline">Back to Students</a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Assign Scholarship</h3>
-                    <form method="POST" action="{{ route('admin.students.scholarships.store', $student->id) }}">
+                    <form method="POST" action="{{ route('finance.students.scholarships.store', $student->id) }}">
                         @csrf
                         <div class="mb-4">
                             <label class="block font-medium text-sm text-gray-700">Select Scholarship</label>
@@ -58,7 +58,7 @@
                                     <p class="text-sm text-green-600">LKR {{ number_format($scholarship->amount, 2) }} Off</p>
                                 </div>
 
-                                <form method="POST" action="{{ route('admin.students.scholarships.destroy', [$student->id, $scholarship->id]) }}" onsubmit="return confirm('Remove this scholarship?');">
+                                <form method="POST" action="{{ route('finance.students.scholarships.destroy', [$student->id, $scholarship->id]) }}" onsubmit="return confirm('Remove this scholarship?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-bold">Remove</button>

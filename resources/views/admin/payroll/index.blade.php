@@ -9,12 +9,13 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-
+                    @can('payroll.create')
                     <div class="mb-6">
                         <a href="{{ route('finance.payroll.process.form') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             {{ __('Process New Payroll') }}
                         </a>
                     </div>
+                    @endcan
 
                     <form method="GET" action="{{ route('finance.payroll.index') }}" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -108,11 +109,13 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-
+                                            @can('payroll.edit')
                                             <a href="{{ route('finance.payroll.show', $payroll->id) }}" class="text-blue-600 hover:text-blue-900 font-bold mr-3">
                                                 Manage / Pay
                                             </a>
+                                            @endcan
 
+                                            @can('payroll.delete')
                                             <form class="inline" method="POST" action="{{ route('finance.payroll.destroy', $payroll->id) }}"
                                                   onsubmit="return confirm('Are you sure you want to delete this payroll record?');">
 
@@ -123,6 +126,8 @@
                                                     Delete
                                                 </button>
                                             </form>
+                                            @endcan
+                                            
                                         </td>
                                     </tr>
                                 @empty

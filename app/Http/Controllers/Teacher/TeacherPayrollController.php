@@ -9,18 +9,37 @@ use Illuminate\Http\Request;
 
 class TeacherPayrollController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // 1. Logged-in user ගේ Staff ID එක ගන්න
-        $staffId = Auth::user()->staff->id;
+        // 1. Log wela inna Teacher ge Staff ID eka gannawa
+        $staff = Auth::user()->staff;
 
-        // 2. ඒ Staff ID එකට අදාළ payrolls විතරක් ගන්න
-        $payrolls = Payroll::where('staff_id', $staffId)
-                            ->latest()
-                            ->paginate(15);
+        if (!$staff) {
+            abort(403, 'Staff profile not found.');
+        }
 
-        // 3. අලුත් view එකකට යවන්න
-        return view('teacher.payroll.index', compact('payrolls'));
+        // 2. Query eka patan gannawa (e teacher ge payrolls witharak)
+        $query = Payroll::where('staff_id', $staff->id)->latest();
+
+        // --- FILTERS ---
+        
+        // Month Filter
+        if ($request->filled('month')) {
+            $query->where('month', $request->month);
+        }
+
+        // Year Filter
+        if ($request->filled('year')) {
+            $query->where('year', $request->year);
+        }
+
+        // 3. Pagination (10 per page) + Filter parameters thiyaganna appends() danawa
+        $payrolls = $query->paginate(10)->appends($request->all());
+
+        // Dropdown walata Awurudu (Years) list eka gannawa
+        $years = Payroll::select('year')->distinct()->orderBy('year', 'desc')->pluck('year');
+
+        return view('teacher.payroll.index', compact('payrolls', 'years'));
     }
 
     /**

@@ -81,10 +81,12 @@
                         </div>
 
                         <div class="flex items-center justify-between mt-6">
+                            @can('Scholarships.view')
                             <a href="{{ route('finance.students.scholarships.assign', $student->id) }}"
                             class="text-green-600 hover:text-green-900">
                                 Scholarships
                             </a>
+                             @endcan
 
                             <button type="submit"
                                 class="inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">

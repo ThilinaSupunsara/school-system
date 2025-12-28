@@ -13,16 +13,27 @@ use Illuminate\Support\Facades\DB;
 class AttendanceController extends Controller
 {
     public function showClassList()
-    {
-        // 1. Logged-in teacher භාරව ඉන්න පන්ති ටික ගන්නවා
-        $assignedSections = Auth::user()->staff->classSections; // (අපි fix කරපු hasMany relationship එක)
+{
+    // 1. Logged-in teacher භාරව ඉන්න පන්ති ටික
+    $assignedSections = Auth::user()->staff->classSections;
 
-        return view('teacher.attendance.select_class', compact('assignedSections'));
+    // 2. Loop through sections
+    foreach ($assignedSections as $section) {
+        
+        // නිවැරදි Logic එක:
+        // "මේ Section එකේ ඉන්න (student), යම් සිසුවෙකුට අද දවසේ (attendance) එකක් තියෙනවද?"
+        $hasAttendance = Attendance::whereHas('student', function ($query) use ($section) {
+            $query->where('section_id', $section->id);
+        })
+        ->whereDate('attendance_date', now()->format('Y-m-d'))
+        ->exists();
+
+        // Status එක අමුණනවා
+        $section->is_marked = $hasAttendance;
     }
 
-    /**
-     * Show the attendance marking form for a specific section.
-     */
+    return view('teacher.attendance.select_class', compact('assignedSections'));
+}
     public function showMarkForm(Section $section)
     {
         // 1. Security Check

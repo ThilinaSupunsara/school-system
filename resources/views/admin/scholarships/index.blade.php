@@ -16,7 +16,7 @@
 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 h-fit">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Scholarship</h3>
-                    <form method="POST" action="{{ route('admin.scholarships.store') }}">
+                    <form method="POST" action="{{ route('finance.scholarships.store') }}">
                         @csrf
                         <div class="mb-4">
                             <label class="block font-medium text-sm text-gray-700">Scholarship Name</label>
@@ -43,7 +43,7 @@
                                     <p class="text-sm text-green-600">LKR {{ number_format($scholarship->amount, 2) }} Off</p>
                                 </div>
 
-                                <form method="POST" action="{{ route('admin.scholarships.destroy', $scholarship->id) }}" onsubmit="return confirm('Are you sure you want to delete this scholarship type?');">
+                                <form method="POST" action="{{ route('finance.scholarships.destroy', $scholarship->id) }}" onsubmit="return confirm('Are you sure you want to delete this scholarship type?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-bold px-3 py-1 rounded hover:bg-red-50 transition">

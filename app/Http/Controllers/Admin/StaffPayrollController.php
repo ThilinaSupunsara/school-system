@@ -10,6 +10,9 @@ class StaffPayrollController extends Controller
 {
     public function edit(Staff $staff)
     {
+        if (!auth()->user()->can('staff.Payroll')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // Eager load the relationships
         $staff->load('user', 'allowances', 'deductions');
 

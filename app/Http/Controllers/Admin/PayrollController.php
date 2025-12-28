@@ -14,6 +14,9 @@ class PayrollController extends Controller
 {
     public function showProcessForm()
 {
+    if (!auth()->user()->can('payroll.create')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
     // View එකට default month/year යවමු
     $currentMonth = now()->month; // e.g., 11
     $currentYear = now()->year;  // e.g., 2025
@@ -88,6 +91,9 @@ class PayrollController extends Controller
 
     public function index(Request $request)
     {
+        if (!auth()->user()->can('payroll.view')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 1. Query එක පටන් ගන්නවා
         $query = Payroll::with('staff.user');
 
@@ -127,13 +133,16 @@ class PayrollController extends Controller
         return view('admin.payroll.index', compact('payrolls'));
     }
 
-   
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Payroll $payroll)
     {
+        if (!auth()->user()->can('payroll.delete')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // Payroll record එක delete කිරීම
         $payroll->delete();
 
@@ -183,6 +192,9 @@ class PayrollController extends Controller
 
     public function show(Payroll $payroll)
     {
+        if (!auth()->user()->can('payroll.edit')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $payroll->load('staff.user', 'payments');
         $balance = $payroll->net_salary - $payroll->paid_amount;
 

@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\FeeCategoryController;
 use App\Http\Controllers\Admin\FeeStructureController;
 use App\Http\Controllers\Admin\GradeController;
 use App\Http\Controllers\Admin\PayrollController;
+use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\ScholarshipController;
 use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\SettingController;
@@ -65,38 +66,13 @@ Route::get('/dashboard', function () {
         ->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-            Route::resource('staff', StaffController::class);
-
-            Route::get('staff/{staff}/payroll', [StaffPayrollController::class, 'edit'])->name('staff.payroll.edit');
-            Route::post('staff/{staff}/allowances', [AllowanceController::class, 'store'])->name('staff.allowances.store');
-            Route::delete('allowances/{allowance}', [AllowanceController::class, 'destroy'])->name('allowances.destroy');
-
-            // Routes for Staff Deductions
-            Route::post('staff/{staff}/deductions', [DeductionController::class, 'store'])->name('staff.deductions.store');
-            Route::delete('deductions/{deduction}', [DeductionController::class, 'destroy'])->name('deductions.destroy');
-
-
             Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
             Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
 
-            Route::get('roles', [UserRoleController::class, 'index'])->name('roles.index');
-            Route::post('roles', [UserRoleController::class, 'store'])->name('roles.store');
-            Route::delete('roles/{role}', [UserRoleController::class, 'destroy'])->name('roles.destroy');
-
-            // Scholarships Management
-            Route::get('scholarships', [ScholarshipController::class, 'index'])->name('scholarships.index');
-            Route::post('scholarships', [ScholarshipController::class, 'store'])->name('scholarships.store');
-            Route::delete('scholarships/{scholarship}', [ScholarshipController::class, 'destroy'])->name('scholarships.destroy');
-
-            // Assign to Student Routes
-            Route::get('students/{student}/scholarships', [ScholarshipController::class, 'assignForm'])->name('students.scholarships.assign');
-            Route::post('students/{student}/scholarships', [ScholarshipController::class, 'assignStore'])->name('students.scholarships.store');
-            Route::delete('students/{student}/scholarships/{scholarship}', [ScholarshipController::class, 'assignDestroy'])->name('students.scholarships.destroy');
-
-            Route::get('permissions-matrix', [\App\Http\Controllers\Admin\RolePermissionController::class, 'index'])
+            Route::get('permissions-matrix', [RolePermissionController::class, 'index'])
                 ->name('permissions.matrix');
 
-            Route::post('permissions-matrix', [\App\Http\Controllers\Admin\RolePermissionController::class, 'update'])
+            Route::post('permissions-matrix', [RolePermissionController::class, 'update'])
                 ->name('permissions.update');
         });
 
@@ -173,6 +149,11 @@ Route::get('/dashboard', function () {
             Route::get('reports/attendance/daily/pdf', [ReportController::class, 'exportDailyAttendancePdf'])->name('reports.attendance.daily.pdf');
             Route::get('reports/attendance/class/pdf', [ReportController::class, 'exportClassAttendancePdf'])->name('reports.attendance.class.pdf');
             Route::get('reports/attendance/student/pdf', [ReportController::class, 'exportStudentAttendancePdf'])->name('reports.attendance.student.pdf');
+            Route::get('reports/attendance/daily', [ReportController::class, 'dailyAttendance'])->name('reports.attendance.daily');
+
+            Route::get('reports/attendance/student', [ReportController::class, 'studentMonthlyAttendance'])->name('reports.attendance.student');
+
+            Route::get('reports/attendance/class', [ReportController::class, 'classAttendance'])->name('reports.attendance.class');
 
 
             Route::post('invoices/{invoice}/mark-settled', [InvoiceController::class, 'markAsSettled'])->name('invoices.settle');
@@ -190,6 +171,10 @@ Route::get('/dashboard', function () {
             Route::resource('sections', SectionController::class);
             Route::resource('students', StudentController::class);
 
+            Route::get('roles', [UserRoleController::class, 'index'])->name('roles.index');
+            Route::post('roles', [UserRoleController::class, 'store'])->name('roles.store');
+            Route::delete('roles/{role}', [UserRoleController::class, 'destroy'])->name('roles.destroy');
+
             // 1. Assign Teacher Form එක පෙන්වන route (GET)
             Route::get('sections/{section}/assign-teacher', [SectionController::class, 'showAssignTeacherForm'])->name('sections.assign_teacher.form');
 
@@ -198,20 +183,29 @@ Route::get('/dashboard', function () {
 
             // 3. Teacher ව අයින් කරන (Remove) route (DELETE)
             Route::delete('sections/{section}/remove-teacher', [SectionController::class, 'removeAssignTeacher'])->name('sections.assign_teacher.remove');
+
+            Route::resource('staff', StaffController::class);
+
+            Route::get('staff/{staff}/payroll', [StaffPayrollController::class, 'edit'])->name('staff.payroll.edit');
+            Route::post('staff/{staff}/allowances', [AllowanceController::class, 'store'])->name('staff.allowances.store');
+            Route::delete('allowances/{allowance}', [AllowanceController::class, 'destroy'])->name('allowances.destroy');
+
+            // Routes for Staff Deductions
+            Route::post('staff/{staff}/deductions', [DeductionController::class, 'store'])->name('staff.deductions.store');
+            Route::delete('deductions/{deduction}', [DeductionController::class, 'destroy'])->name('deductions.destroy');
+
+
+            // Scholarships Management
+            Route::get('scholarships', [ScholarshipController::class, 'index'])->name('scholarships.index');
+            Route::post('scholarships', [ScholarshipController::class, 'store'])->name('scholarships.store');
+            Route::delete('scholarships/{scholarship}', [ScholarshipController::class, 'destroy'])->name('scholarships.destroy');
+
+            // Assign to Student Routes
+            Route::get('students/{student}/scholarships', [ScholarshipController::class, 'assignForm'])->name('students.scholarships.assign');
+            Route::post('students/{student}/scholarships', [ScholarshipController::class, 'assignStore'])->name('students.scholarships.store');
+            Route::delete('students/{student}/scholarships/{scholarship}', [ScholarshipController::class, 'assignDestroy'])->name('students.scholarships.destroy');
     });
 
 
-    Route::middleware(['auth', 'role:admin|teacher'])
-            ->prefix('attendance')
-            ->name('attendance.')
-            ->group(function () {
-            Route::get('reports/attendance/daily', [ReportController::class, 'dailyAttendance'])->name('reports.attendance.daily');
-
-
-            Route::get('reports/attendance/student', [ReportController::class, 'studentMonthlyAttendance'])->name('reports.attendance.student');
-
-            Route::get('reports/attendance/class', [ReportController::class, 'classAttendance'])->name('reports.attendance.class');
-
-    });
 
 require __DIR__.'/auth.php';

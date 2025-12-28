@@ -32,7 +32,7 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Add Allowance</h3>
-                        <form method="POST" action="{{ route('admin.staff.allowances.store', $staff->id) }}">
+                        <form method="POST" action="{{ route('finance.staff.allowances.store', $staff->id) }}">
                             @csrf
                             <div class="mb-4">
                                 <label for="allowance_name" class="block font-medium text-sm text-gray-700">{{ __('Allowance Name') }}</label>
@@ -58,7 +58,7 @@
                                         <span class="font-medium">{{ $allowance->name }}</span>:
                                         <span>LKR {{ number_format($allowance->amount, 2) }}</span>
                                     </div>
-                                    <form method="POST" action="{{ route('admin.allowances.destroy', $allowance->id) }}" onsubmit="return confirm('Are you sure?');">
+                                    <form method="POST" action="{{ route('finance.allowances.destroy', $allowance->id) }}" onsubmit="return confirm('Are you sure?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type..." class="text-red-600 ...">Remove</button>
@@ -76,7 +76,7 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Add Deduction</h3>
-                        <form method="POST" action="{{ route('admin.staff.deductions.store', $staff->id) }}">
+                        <form method="POST" action="{{ route('finance.staff.deductions.store', $staff->id) }}">
                             @csrf
                             <div class="mb-4">
                                 <label for="deduction_name" class...="block ...">{{ __('Deduction Name') }}</label>
@@ -102,7 +102,7 @@
                                         <span class="font-medium">{{ $deduction->name }}</span>:
                                         <span>LKR {{ number_format($deduction->amount, 2) }}</span>
                                     </div>
-                                    <form method="POST" action="{{ route('admin.deductions.destroy', $deduction->id) }}" onsubmit="return confirm('Are you sure?');">
+                                    <form method="POST" action="{{ route('finance.deductions.destroy', $deduction->id) }}" onsubmit="return confirm('Are you sure?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 ...">Remove</button>

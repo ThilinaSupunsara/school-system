@@ -30,6 +30,9 @@ class ScholarshipController extends Controller
     // 3. ශිෂ්‍යයෙකුට Scholarship එකක් Assign කරන පිටුව
     public function assignForm(Student $student)
     {
+        if (!auth()->user()->can('Scholarships.view')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $scholarships = Scholarship::all();
         // ළමයාට දැනට තියෙන scholarships ටික load කරනවා
         $student->load('scholarships');

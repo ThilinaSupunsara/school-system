@@ -12,13 +12,17 @@ class RolePermissionController extends Controller
     // 1. Matrix එක පෙන්වන පිටුව
     public function index()
     {
-        // Admin හැර අනිත් roles ටික ගන්න (Admin ගේ බලතල වෙනස් කරන්න දෙන්න හොඳ නෑ)
         $roles = Role::where('name', '!=', 'admin')->get();
-
-        // Permissions ඔක්කොම ගන්න
         $permissions = Permission::all();
 
-        return view('admin.roles.matrix', compact('roles', 'permissions'));
+        // Permissions කාණ්ඩ (Groups) වලට වෙන් කිරීම
+        // උදා: 'student.view' -> 'Student' group එකට
+        $groupedPermissions = $permissions->groupBy(function ($permission) {
+            $parts = explode('.', $permission->name); // තිත් (.) වලින් කඩනවා
+            return ucwords(str_replace('-', ' ', $parts[0])); // Group Name (Student, Invoice, etc.)
+        });
+
+        return view('admin.roles.matrix', compact('roles', 'groupedPermissions'));
     }
 
     // 2. Permissions Save කිරීම

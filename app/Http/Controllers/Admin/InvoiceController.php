@@ -15,11 +15,15 @@ use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
+    
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        if (!auth()->user()->can('invoice.view')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 1. Filters sadaha Data gannawa
         $grades = Grade::all();
         $sections = Section::all();
@@ -90,6 +94,9 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice)
     {
+        if (!auth()->user()->can('invoice.edit')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // Invoice එකට අදාළ හැමදේම Eager Load කරමු
         $invoice->load('student.section.grade', 'invoiceItems.feeCategory', 'payments');
 
@@ -120,6 +127,9 @@ class InvoiceController extends Controller
      */
     public function destroy(Invoice $invoice)
     {
+        if (!auth()->user()->can('invoice.delete')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $invoice->delete();
 
         return redirect()->route('finance.invoices.index')
@@ -128,6 +138,9 @@ class InvoiceController extends Controller
 
     public function showGenerateForm()
     {
+        if (!auth()->user()->can('invoice.create')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $grades = Grade::all();
         $feeCategories = FeeCategory::all();
         $sections = Section::all(); // <-- 1. Sections ටිකත් View එකට යවමු
@@ -137,6 +150,7 @@ class InvoiceController extends Controller
 
     public function processGenerate(Request $request)
     {
+        
         // 1. Validation
         $request->validate([
             'grade_id' => 'required|exists:grades,id',
@@ -224,6 +238,7 @@ class InvoiceController extends Controller
 
     public function storePayment(Request $request, Invoice $invoice)
     {
+        
         // 1. Validation
         $request->validate([
             'amount' => 'required|numeric|min:0.01|max:' . ($invoice->total_amount - $invoice->paid_amount),

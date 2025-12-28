@@ -21,7 +21,7 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
-                    <form method="GET" action="{{ route('attendance.reports.attendance.student') }}" id="report-form">
+                    <form method="GET" action="{{ route('finance.reports.attendance.student') }}" id="report-form">
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4 pb-4 border-b">
                             <div>
@@ -47,7 +47,7 @@
                                 </select>
                             </div>
                             <div class="flex items-end">
-                                <a href="{{ route('attendance.reports.attendance.student') }}" class="text-sm text-blue-600 hover:underline mb-2">Clear Filters</a>
+                                <a href="{{ route('finance.reports.attendance.student') }}" class="text-sm text-blue-600 hover:underline mb-2">Clear Filters</a>
                             </div>
                         </div>
 

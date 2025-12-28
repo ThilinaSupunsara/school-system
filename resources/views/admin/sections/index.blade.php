@@ -150,9 +150,12 @@
 
                                             <a href="{{ route('finance.sections.edit', $section->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
 
+                                            @can('AssignTeacher.view')
+
                                             <a href="{{ route('finance.sections.assign_teacher.form', $section->id) }}" class="text-green-600 hover:text-green-900 mr-3">
                                                 Assign Teacher
                                             </a>
+                                             @endcan
 
                                             <form class="inline" method="POST" action="{{ route('finance.sections.destroy', $section->id) }}"
                                                   onsubmit="return confirm('Are you sure you want to delete this section?');">

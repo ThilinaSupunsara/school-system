@@ -9,12 +9,13 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-
+                    @can('student.create')
                     <div class="flex justify-between items-center mb-6">
                         <a href="{{ route('finance.students.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             {{ __('Register New Student') }}
                         </a>
                     </div>
+                    @endcan
 
                     <form method="GET" action="{{ route('finance.students.index') }}" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -128,13 +129,18 @@
                                             {{ $student->section->grade->name }} - {{ $student->section->name }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $student->parent_phone }}</td>
+                                        @can('student.edit')
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('finance.students.edit', $student->id) }}" class="text-indigo-600 hover:text-indigo-900">View/Edit</a>
+                                            <a href="{{ route('finance.students.edit', $student->id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                View/Edit
+                                            </a>
 
 
                                             </td>
+                                            @endcan
 
                                         <td>
+                                            @can('student.delete')
                                             <form class="inline" method="POST" action="{{ route('finance.students.destroy', $student->id) }}"
                                             onsubmit="return confirm('Are you sure you want to delete this student?');">
 
@@ -145,6 +151,8 @@
                                                 Delete
                                             </button>
                                         </form>
+                                        @endcan
+                                        
                                         </td>
 
                                     </tr>

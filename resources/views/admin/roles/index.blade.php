@@ -19,7 +19,7 @@
 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 h-fit">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Role</h3>
-                    <form method="POST" action="{{ route('admin.roles.store') }}">
+                    <form method="POST" action="{{ route('finance.roles.store') }}">
                         @csrf
                         <div class="mb-4">
                             <label class="block font-medium text-sm text-gray-700">Role Name</label>
@@ -40,7 +40,7 @@
                                 <span class="capitalize font-semibold">{{ $role->name }}</span>
 
                                 @if(!in_array($role->name, ['admin', 'accountant', 'teacher']))
-                                    <form method="POST" action="{{ route('admin.roles.destroy', $role->id) }}" onsubmit="return confirm('Are you sure?');">
+                                    <form method="POST" action="{{ route('finance.roles.destroy', $role->id) }}" onsubmit="return confirm('Are you sure?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>

@@ -17,6 +17,9 @@ class StaffController extends Controller
      */
     public function index(Request $request)
     {
+        if (!auth()->user()->can('staff.view')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 1. Dropdown eka sadaha Roles gannawa ('admin' ara)
         $roles = UserRole::where('name', '!=', 'admin')->get();
 
@@ -55,6 +58,9 @@ class StaffController extends Controller
      */
     public function create()
     {
+        if (!auth()->user()->can('staff.create')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $roles = UserRole::where('name', '!=', 'admin')->get();
         return view('admin.staff.create', compact('roles'));
     }
@@ -95,7 +101,7 @@ class StaffController extends Controller
             'basic_salary' => $request->basic_salary,
         ]);
 
-        return redirect()->route('admin.staff.index')
+        return redirect()->route('finance.staff.index')
                          ->with('success', 'Staff member registered successfully.');
     }
 
@@ -112,6 +118,9 @@ class StaffController extends Controller
      */
     public function edit(Staff $staff)
     {
+        if (!auth()->user()->can('staff.edit')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         return view('admin.staff.edit', compact('staff'));
     }
 
@@ -163,7 +172,7 @@ class StaffController extends Controller
         ]);
 
         // 5. Redirect Back
-        return redirect()->route('admin.staff.index')
+        return redirect()->route('finance.staff.index')
                          ->with('success', 'Staff member updated successfully.');
 
     }
@@ -173,6 +182,9 @@ class StaffController extends Controller
      */
     public function destroy(Staff $staff)
     {
+        if (!auth()->user()->can('staff.delete')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 2. destroy method එක මෙහෙම වෙනස් කරන්න
         try {
 
@@ -184,13 +196,13 @@ class StaffController extends Controller
             $user->delete();
 
             // සාර්ථක වුණොත්
-            return redirect()->route('admin.staff.index')
+            return redirect()->route('finance.staff.index')
                              ->with('success', 'Staff member deleted successfully.');
 
         } catch (QueryException $e) {
 
             // Database Error එකක් ආවොත්
-            return redirect()->route('admin.staff.index')
+            return redirect()->route('finance.staff.index')
                              ->with('error', 'Cannot delete this staff member. They may have related records.');
         }
 

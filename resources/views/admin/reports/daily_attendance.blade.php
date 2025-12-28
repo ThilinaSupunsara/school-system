@@ -10,7 +10,7 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
-                    <form method="GET" action="{{ route('attendance.reports.attendance.daily') }}" class="flex items-end gap-4">
+                    <form method="GET" action="{{ route('finance.reports.attendance.daily') }}" class="flex items-end gap-4">
                         <div>
                             <label for="date" class="block font-medium text-sm text-gray-700">{{ __('Select Date') }}</label>
                             <input id="date" class="block mt-1 w-full rounded-md shadow-sm border-gray-300"

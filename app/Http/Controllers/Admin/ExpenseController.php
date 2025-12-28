@@ -15,6 +15,10 @@ class ExpenseController extends Controller
     // 1. INDEX METHOD (Filters + Pagination සමග)
     public function index(Request $request)
     {
+        if (!auth()->user()->can('expense.view')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
+
         $query = Expense::with('category', 'issuer')->latest();
 
         // --- Filters ---
@@ -70,6 +74,10 @@ class ExpenseController extends Controller
     // 1. CREATE Method Update
     public function create()
     {
+        if (!auth()->user()->can('expense.create')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
+
         $staffMembers = \App\Models\Staff::with('user')->get();
 
         // --- Categories ටික ගන්න ---
@@ -105,6 +113,9 @@ class ExpenseController extends Controller
     // 4. පියවීමේ පිටුව (Settle Page)
     public function edit(Expense $expense)
     {
+        if (!auth()->user()->can('expense.edit')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // දැනටමත් settle කරලා නම් edit කරන්න බෑ
         if($expense->status == 'completed') {
             return back()->with('error', 'This expense is already settled.');
@@ -115,6 +126,9 @@ class ExpenseController extends Controller
     // 5. පියවීම Save කිරීම (Settle & Upload Receipt)
     public function update(Request $request, Expense $expense)
     {
+        if (!auth()->user()->can('expense.edit')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $request->validate([
             'amount_spent' => 'required|numeric|min:0',
             'receipt' => 'nullable|image|max:2048', // Optional Image
@@ -140,6 +154,9 @@ class ExpenseController extends Controller
     // 6. Delete (අවශ්‍ය නම්)
     public function destroy(Expense $expense)
     {
+        if (!auth()->user()->can('expense.delete')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         if($expense->receipt_path) {
             Storage::disk('public')->delete($expense->receipt_path);
         }

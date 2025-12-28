@@ -25,7 +25,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.staff.store') }}">
+                    <form method="POST" action="{{ route('finance.staff.store') }}">
                         @csrf
 
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Login Details</h3>

@@ -18,6 +18,9 @@ class ReportController extends Controller
 {
     public function outstandingFees(Request $request)
     {
+        if (!auth()->user()->can('report.financial')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 1. Filter Dropdowns වලට data ටික අරගන්නවා
         $grades = Grade::all();
         $sections = Section::all();
@@ -64,6 +67,9 @@ class ReportController extends Controller
 
     public function salarySheet(Request $request)
     {
+        if (!auth()->user()->can('report.financial')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 1. Validate the request (nullable, so it's okay if they don't exist)
         $validated = $request->validate([
             'month' => 'nullable|integer|between:1,12',
@@ -101,6 +107,9 @@ class ReportController extends Controller
 
     public function dailyAttendance(Request $request)
     {
+        if (!auth()->user()->can('report.attendance')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 1. දිනය තෝරාගැනීම (User එව්වේ නැත්නම් අද දවස)
         $selectedDate = $request->input('date', Carbon::today()->format('Y-m-d'));
 
@@ -142,6 +151,9 @@ class ReportController extends Controller
 
     public function studentMonthlyAttendance(Request $request)
     {
+        if (!auth()->user()->can('report.attendance')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // 1. Dropdowns වලට Data
         $grades = Grade::all();
         $sections = Section::all();
@@ -210,6 +222,9 @@ class ReportController extends Controller
      */
     public function classAttendance(Request $request)
     {
+        if (!auth()->user()->can('report.attendance')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         $grades = Grade::all(); // Grade Filter එකට
         $sections = Section::all(); // All sections for filtering logic in JS
 

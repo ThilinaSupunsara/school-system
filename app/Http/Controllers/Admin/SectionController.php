@@ -143,6 +143,9 @@ class SectionController extends Controller
 
     public function showAssignTeacherForm(Section $section)
     {
+        if (!auth()->user()->can('AssignTeacher.view')) {
+            abort(403, 'SORRY! You do not have permission to this.');
+        }
         // Section එකත් එක්කම, දැනට ඉන්න teacher වත් load කරගන්නවා
         $section->load('classTeacher.user');
 

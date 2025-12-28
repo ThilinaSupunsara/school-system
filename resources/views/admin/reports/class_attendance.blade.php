@@ -10,7 +10,7 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
-                    <form method="GET" action="{{ route('attendance.reports.attendance.class') }}">
+                    <form method="GET" action="{{ route('finance.reports.attendance.class') }}">
                         <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
 
                             <div>

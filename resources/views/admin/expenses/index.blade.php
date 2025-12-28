@@ -1,13 +1,19 @@
 <x-app-layout>
-    <x-slot name="header">{{ __('Other Expenses / Petty Cash') }}</x-slot>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+
+            {{ __('Other Expenses / Petty Cash') }}
+        </h2>
+    </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-
+                @can('expense.create')
                 <a href="{{ route('finance.expenses.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 mb-6">
                     Issue New Cash
                 </a>
+                 @endcan
                 <div class="mb-6 bg-gray-50 p-4 rounded-lg border">
                     <form method="GET" action="{{ route('finance.expenses.index') }}">
                         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
@@ -97,7 +103,9 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-right">
+                                    @can('expense.edit')
                                     @if($expense->status == 'pending')
+
                                         <a href="{{ route('finance.expenses.edit', $expense->id) }}" class="text-blue-600 hover:underline font-bold">Settle</a>
                                     @else
                                         @if($expense->receipt_path)
@@ -109,6 +117,10 @@
                                             <span class="text-gray-400 text-xs">No Receipt</span>
                                         @endif
                                     @endif
+
+                                    @endcan
+
+                                    @can('expense.delete')
                                     <form action="{{ route('finance.expenses.destroy', $expense->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this expense record?');">
                                         @csrf
                                         @method('DELETE')
@@ -118,6 +130,7 @@
                                             </svg>
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach
