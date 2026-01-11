@@ -28,7 +28,7 @@ use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardControll
 use App\Http\Controllers\Teacher\TeacherPayrollController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth\login');
 });
 
 

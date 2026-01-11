@@ -121,7 +121,8 @@ class StaffController extends Controller
         if (!auth()->user()->can('staff.edit')) {
             abort(403, 'SORRY! You do not have permission to this.');
         }
-        return view('admin.staff.edit', compact('staff'));
+         $roles = UserRole::where('name', '!=', 'admin')->get();
+        return view('admin.staff.edit', compact('staff','roles'));
     }
 
     /**
