@@ -44,7 +44,7 @@ class GradeController extends Controller
             'name' => $request->name,
         ]);
 
-        return redirect()->route('admin.grades.index')
+        return redirect()->route('finance.grades.index')
                          ->with('success', 'Grade created successfully.');
     }
 
@@ -81,7 +81,7 @@ class GradeController extends Controller
         ]);
 
         // 3. Redirect Back (ආපසු යැවීම)
-        return redirect()->route('admin.grades.index')
+        return redirect()->route('finance.grades.index')
                          ->with('success', 'Grade updated successfully.');
 
     }
@@ -96,13 +96,13 @@ class GradeController extends Controller
         $grade->delete();
 
         // 2. Redirect Back (ආපසු යැවීම)
-        return redirect()->route('admin.grades.index')
+        return redirect()->route('finance.grades.index')
                          ->with('success', 'Grade deleted successfully.');
 
         } catch (QueryException $e) {
 
 
-            return redirect()->route('admin.grades.index')
+            return redirect()->route('finance.grades.index')
                              ->with('error', 'Cannot delete this Grade. Students are still assigned to it.');
         }
     }

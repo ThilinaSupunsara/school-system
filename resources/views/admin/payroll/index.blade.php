@@ -91,7 +91,7 @@
 
             @if (session('error'))
                 <div class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50 shadow-sm" role="alert">
-                    <svg class="flex-shrink-0 inline w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    <svg class="flex-shrink-0 inline w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" ></path></svg>
                     <span class="font-medium">{{ session('error') }}</span>
                 </div>
             @endif
@@ -160,11 +160,11 @@
                                             @endcan
 
                                             @can('payroll.delete')
-                                            <form class="inline-block" method="POST" action="{{ route('finance.payroll.destroy', $payroll->id) }}"
-                                                  onsubmit="return confirm('Are you sure you want to delete this record?');">
+                                            <form class="inline-block" method="POST" action="{{ route('finance.payroll.destroy', $payroll->id) }}">
+
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-400 hover:text-red-600 p-1 transition" title="Delete">
+                                                <button type="submit" onclick="confirmDelete(event)" class="text-red-400 hover:text-red-600 p-1 transition" title="Delete">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>
                                             </form>
@@ -194,4 +194,30 @@
 
         </div>
     </div>
+
+<script>
+     function confirmDelete(event) {
+
+        event.preventDefault();
+
+
+        const form = event.target.closest('form');
+
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    }
+</script>
 </x-app-layout>

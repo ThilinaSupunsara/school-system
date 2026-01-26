@@ -20,7 +20,7 @@ class UserRoleController extends Controller
             'name' => 'required|string|max:50|unique:user_roles,name',
         ]);
 
-        // නම සිම්පල් අකුරින් save කරමු (lowercase) - අපේ logic වලට ලේසියි
+
         UserRole::create([
             'name' => strtolower($request->name),
         ]);
@@ -30,7 +30,7 @@ class UserRoleController extends Controller
 
     public function destroy(UserRole $role)
     {
-        // ප්‍රධාන roles 3 delete කරන්න දෙන්න එපා
+        
         if (in_array($role->name, ['admin', 'accountant', 'teacher'])) {
             return back()->with('error', 'Cannot delete core system roles.');
         }

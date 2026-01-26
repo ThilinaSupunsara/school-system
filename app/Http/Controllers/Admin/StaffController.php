@@ -91,7 +91,12 @@ class StaffController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
-        $user->assignRole($request->role);
+
+       $allowedRoles = ['admin', 'accountant', 'teacher'];
+
+        if (in_array($request->role, $allowedRoles)) {
+            $user->assignRole($request->role);
+        }
 
         // 3. Staff member ව හදමු (අලුත් user ID එක දාලා)
         $user->staff()->create([
@@ -141,7 +146,6 @@ class StaffController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class.',email,'.$user->id],
             // Password එක nullable (හිස් වෙන්න පුළුවන්)
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:accountant,teacher'],
 
             // Staff Details
             'designation' => ['required', 'string', 'max:255'],
@@ -154,7 +158,6 @@ class StaffController extends Controller
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
-            'role' => $request->role,
         ]);
 
         // 3. Password එක Update කිරීම (password field එක හිස් නැත්නම් විතරක්)

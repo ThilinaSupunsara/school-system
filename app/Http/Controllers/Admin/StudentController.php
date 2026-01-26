@@ -98,7 +98,7 @@ class StudentController extends Controller
             'section_id' => $request->section_id,
         ]);
 
-        return redirect()->route('admin.students.index')
+        return redirect()->route('finance.students.index')
                          ->with('success', 'Student registered successfully.');
     }
 

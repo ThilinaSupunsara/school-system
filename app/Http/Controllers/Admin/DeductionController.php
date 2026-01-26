@@ -24,7 +24,7 @@ class DeductionController extends Controller
         ]);
 
         // 3. Redirect back to the staff edit page
-        return redirect()->route('admin.staff.payroll.edit', $staff->id)
+        return redirect()->route('finance.staff.payroll.edit', $staff->id)
                          ->with('success', 'Deduction added successfully.');
     }
 
@@ -40,7 +40,7 @@ class DeductionController extends Controller
         $deduction->delete();
 
         // Redirect back
-        return redirect()->route('admin.staff.payroll.edit', $staffId)
+        return redirect()->route('finance.staff.payroll.edit', $staffId)
                          ->with('success', 'Deduction removed successfully.');
     }
 }

@@ -72,7 +72,7 @@ class SectionController extends Controller
             'grade_id' => $request->grade_id,
         ]);
 
-        return redirect()->route('admin.sections.index')
+        return redirect()->route('finance.sections.index')
                          ->with('success', 'Section created successfully.');
     }
 
@@ -112,7 +112,7 @@ class SectionController extends Controller
         ]);
 
         // 3. Redirect Back
-        return redirect()->route('admin.sections.index')
+        return redirect()->route('finance.sections.index')
                          ->with('success', 'Section updated successfully.');
 
     }
@@ -129,13 +129,13 @@ class SectionController extends Controller
             $section->delete();
 
             // සාර්ථක වුණොත්
-            return redirect()->route('admin.sections.index')
+            return redirect()->route('finance.sections.index')
                              ->with('success', 'Section deleted successfully.');
 
         } catch (QueryException $e) {
 
 
-            return redirect()->route('admin.sections.index')
+            return redirect()->route('finance.sections.index')
                              ->with('error', 'Cannot delete this section. Students are still assigned to it.');
         }
 
@@ -171,7 +171,7 @@ class SectionController extends Controller
             'class_teacher_id' => $request->class_teacher_id,
         ]);
 
-        return redirect()->route('admin.sections.assign_teacher.form', $section->id)
+        return redirect()->route('finance.sections.assign_teacher.form', $section->id)
                          ->with('success', 'Class Teacher assigned successfully.');
     }
 
@@ -185,7 +185,7 @@ class SectionController extends Controller
             'class_teacher_id' => null,
         ]);
 
-        return redirect()->route('admin.sections.assign_teacher.form', $section->id)
+        return redirect()->route('finance.sections.assign_teacher.form', $section->id)
                          ->with('success', 'Class Teacher removed successfully.');
     }
 }

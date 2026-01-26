@@ -102,19 +102,6 @@
 
                             <div class="space-y-6">
                                 <div>
-                                    <label for="role" class="block text-sm font-bold text-gray-700 mb-2">System Role</label>
-                                    <select name="role" id="role" required
-                                            class="w-full rounded-xl border-gray-200 bg-white focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors sm:text-sm py-3 appearance-none">
-                                        <option value="">Select a Role</option>
-                                        @foreach ($roles as $role)
-                                            <option value="{{ $role->name }}" {{ (old('role', $staff->user->role) == $role->name) ? 'selected' : '' }}>
-                                                {{ ucfirst($role->name) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div>
                                     <label for="designation" class="block text-sm font-bold text-gray-700 mb-2">Designation</label>
                                     <input id="designation" type="text" name="designation" value="{{ old('designation', $staff->designation) }}" required
                                            class="w-full rounded-xl border-gray-200 bg-white focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors sm:text-sm py-3">
