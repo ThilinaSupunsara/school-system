@@ -13,27 +13,33 @@ use Illuminate\Support\Facades\DB;
 class AttendanceController extends Controller
 {
     public function showClassList()
-{
-    // 1. Logged-in teacher භාරව ඉන්න පන්ති ටික
-    $assignedSections = Auth::user()->staff->classSections;
+    {
+        // 1. Logged-in teacher භාරව ඉන්න පන්ති ටික
+        $assignedSections = Auth::user()->staff->classSections;
 
-    // 2. Loop through sections
-    foreach ($assignedSections as $section) {
-        
-        // නිවැරදි Logic එක:
-        // "මේ Section එකේ ඉන්න (student), යම් සිසුවෙකුට අද දවසේ (attendance) එකක් තියෙනවද?"
-        $hasAttendance = Attendance::whereHas('student', function ($query) use ($section) {
-            $query->where('section_id', $section->id);
-        })
-        ->whereDate('attendance_date', now()->format('Y-m-d'))
-        ->exists();
+        // 2. Section IDs ටික ගන්නවා
+        $sectionIds = $assignedSections->pluck('id');
 
-        // Status එක අමුණනවා
-        $section->is_marked = $hasAttendance;
+        // 3. Optimized Query: මේ sections වල ඉන්න ළමයින්ගේ අද දවසේ attendance තියෙනවාද?
+        $markedSectionIds = Attendance::query()
+            ->whereDate('attendance_date', now()->format('Y-m-d'))
+            ->whereHas('student', function ($q) use ($sectionIds) {
+                $q->whereIn('section_id', $sectionIds);
+            })
+            ->with('student:id,section_id') // Eager load minimal data
+            ->get()
+            ->pluck('student.section_id')
+            ->unique()
+            ->toArray();
+
+
+        // 4. Map results to sections (Memory only, no DB queries)
+        foreach ($assignedSections as $section) {
+            $section->is_marked = in_array($section->id, $markedSectionIds);
+        }
+
+        return view('teacher.attendance.select_class', compact('assignedSections'));
     }
-
-    return view('teacher.attendance.select_class', compact('assignedSections'));
-}
     public function showMarkForm(Section $section)
     {
         // 1. Security Check
@@ -59,8 +65,8 @@ class AttendanceController extends Controller
 
         // 4. අද දවසේ Attendance (Mark කරලද බලන්න)
         $attendanceData = Attendance::where('attendance_date', $today)
-                                    ->whereIn('student_id', $studentIds)
-                                    ->pluck('status', 'student_id');
+            ->whereIn('student_id', $studentIds)
+            ->pluck('status', 'student_id');
 
         // 5. මාසික Absent Count (History)
         $monthlyAbsentCounts = Attendance::where('status', 'absent')

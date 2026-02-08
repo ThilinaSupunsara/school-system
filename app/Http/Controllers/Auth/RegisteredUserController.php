@@ -31,7 +31,7 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -40,7 +40,11 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-        $user->assignRole($request->role);
+        // Security: Prevent arbitrary role assignment
+        // Only allow 'student' or 'teacher'. Default to 'teacher' if invalid/missing.
+        // Admin role must be assigned manually by an existing Admin.
+        $role = in_array($request->role, ['student', 'teacher']) ? $request->role : 'teacher';
+        $user->assignRole($role);
 
         event(new Registered($user));
 

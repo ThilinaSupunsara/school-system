@@ -8,8 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class Student extends Model
 {
     use HasFactory;
-    // $fillable හෝ $guarded මෙතන දාන්න
-    protected $guarded = [];
+    // $fillable defined for Mass Assignment Protection
+    protected $fillable = [
+        'admission_no',
+        'section_id',
+        'name',
+        'dob',
+        'parent_name',
+        'parent_phone',
+    ];
 
     public function section()
     {
