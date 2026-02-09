@@ -33,13 +33,13 @@ class DeductionController extends Controller
      */
     public function destroy(Deduction $deduction)
     {
-        // Redirect කරන්න Staff ID එක save කරගමු
+
         $staffId = $deduction->staff_id;
 
-        // Delete
+
         $deduction->delete();
 
-        // Redirect back
+        
         return redirect()->route('finance.staff.payroll.edit', $staffId)
                          ->with('success', 'Deduction removed successfully.');
     }

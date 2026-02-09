@@ -28,18 +28,16 @@ class AllowanceController extends Controller
                          ->with('success', 'Allowance added successfully.');
     }
 
-    /**
-     * Delete a specific allowance.
-     */
+    
     public function destroy(Allowance $allowance)
     {
-        // Redirect කරන්න Staff ID එක save කරගමු
+      
         $staffId = $allowance->staff_id;
 
-        // Delete
+  
         $allowance->delete();
 
-        // Redirect back
+    
         return redirect()->route('finance.staff.payroll.edit', $staffId)
                          ->with('success', 'Allowance removed successfully.');
     }
