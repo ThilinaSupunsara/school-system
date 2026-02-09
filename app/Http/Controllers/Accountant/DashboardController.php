@@ -27,13 +27,13 @@ class DashboardController extends Controller
                                     ->where('due_date', '<', Carbon::today())
                                     ->sum(DB::raw('total_amount - paid_amount'));
 
-       
+
         $monthlyIncome = Payment::whereYear('payment_date', now()->year)
                                 ->whereMonth('payment_date', now()->month)
                                 ->sum('amount');
 
 
-        // මේ දත්ත 4 view එකට pass කරනවා
+       
         return view('accountant.dashboard', compact(
             'pendingInvoicesCount',
             'totalDueAmount',
